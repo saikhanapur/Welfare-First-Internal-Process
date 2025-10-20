@@ -3,236 +3,399 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Welfare First — Interactive Onboarding Flowchart</title>
+  <title>Welfare First — EROAD Onboarding (Interactive Flow)</title>
+
+  <!-- Styles (compact, focused on clarity & readability) -->
   <style>
-    :root{--bg:#0f172a;--card:#0b1220;--accent:#06b6d4;--text:#e6eef6}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
-    body{background:linear-gradient(180deg,#071029 0%, #071827 60%);color:var(--text)}
-    .app{display:grid;grid-template-columns:1fr 360px;gap:18px;height:100vh;padding:18px}
-    .canvas{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 30px rgba(2,6,23,.6)}
-    #cy{width:100%;height:100%;min-height:740px;border-radius:8px}
-    .sidebar{background:rgba(255,255,255,0.03);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
-    .title{font-weight:700;font-size:18px;margin-bottom:6px}
-    .details{flex:1;overflow:auto;padding:8px;background:rgba(255,255,255,0.02);border-radius:8px}
-    .controls{display:flex;gap:8px}
-    button{background:var(--accent);border:0;padding:8px 10px;border-radius:8px;color:#042027;font-weight:600;cursor:pointer}
-    .btn-secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
-    .node-title{font-weight:700;margin-bottom:6px}
-    .node-text{font-size:13px;line-height:1.4;color:rgba(230,238,246,.9)}
-    .legend{font-size:12px;color:rgba(230,238,246,.7);margin-top:8px}
-    footer{position:fixed;left:18px;bottom:18px;color:rgba(230,238,246,.6);font-size:12px}
+    :root{
+      --bg:#071022; --panel:#0b1220; --accent:#06b6d4; --muted:rgba(230,238,246,.7);
+      --card:#07162a; --node:#0ea5a9; --danger:#ff6b6b;
+      --glass: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#e6eef6}
+    .wrap{display:grid;grid-template-columns:1fr 380px;gap:16px;height:100vh;padding:16px;box-sizing:border-box}
+    .canvas{background:var(--panel);border-radius:12px;padding:12px;box-shadow:0 8px 40px rgba(2,6,23,.6)}
+    #cy{width:100%;height:100%;min-height:720px;border-radius:8px}
+    .side{background:var(--card);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:inset 0 -6px 24px rgba(0,0,0,.25)}
+    .title{font-size:16px;font-weight:700;color:var(--accent)}
+    .subtitle{font-size:12px;color:var(--muted)}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    button{background:var(--accent);border:0;padding:8px 10px;border-radius:8px;color:#042027;font-weight:700;cursor:pointer}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .details{background:var(--glass);border-radius:8px;padding:10px;overflow:auto;height:420px;font-size:13px}
+    .node-title{font-weight:800;color:#fff;margin-bottom:6px}
+    .meta{font-size:12px;color:var(--muted);margin-bottom:8px}
+    .section-title{font-size:13px;font-weight:700;margin-top:8px;color:rgba(255,255,255,.9)}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:12px;margin-right:6px}
+    .legend{font-size:12px;color:var(--muted);margin-top:6px}
+    footer{position:fixed;left:18px;bottom:18px;color:rgba(230,238,246,.5);font-size:12px}
+    input[type=text]{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.04);background:transparent;color:var(--muted)}
     .search{display:flex;gap:8px}
-    input[type=text]{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text)}
     a.link{color:var(--accent);font-weight:600;text-decoration:none}
+    @media (max-width:980px){ .wrap{grid-template-columns:1fr; grid-auto-rows: 1fr} .side{order:2} }
   </style>
-  <!-- Cytoscape.js CDN -->
+
+  <!-- Load Dagre first, then Cytoscape, then Cytoscape-Dagre plugin (order matters) -->
+  <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
   <script src="https://unpkg.com/cytoscape@3.24.0/dist/cytoscape.min.js"></script>
   <script src="https://unpkg.com/cytoscape-dagre@2.4.0/cytoscape-dagre.js"></script>
-  <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
 </head>
+
 <body>
-  <div class="app">
+  <div class="wrap">
     <div class="canvas">
-      <div id="cy"></div>
+      <div id="cy" aria-label="Welfare First onboarding interactive flowchart"></div>
     </div>
 
-    <div class="sidebar">
+    <aside class="side" aria-labelledby="sideTitle">
       <div>
-        <div class="title">Welfare First — Onboarding Flow</div>
-        <div style="font-size:13px;color:rgba(230,238,246,.7)">Click nodes to reveal details. Drag canvas to pan, scroll to zoom.</div>
+        <div id="sideTitle" class="title">Welfare First — EROAD Onboarding</div>
+        <div class="subtitle">Click nodes to inspect operational context, data dependencies, gaps, and ideal-state improvements.</div>
       </div>
 
-      <div class="controls">
+      <div class="controls" role="region" aria-label="controls">
         <button id="fitBtn">Fit</button>
         <button id="zoomIn">Zoom +</button>
-        <button id="zoomOut">Zoom -</button>
-        <button id="exportPng" class="btn-secondary">Export PNG</button>
+        <button id="zoomOut">Zoom −</button>
+        <button id="exportPng" class="btn-ghost">Export PNG</button>
+        <button id="downloadHtml" class="btn-ghost">Download HTML</button>
       </div>
 
       <div class="search">
-        <input id="searchInput" type="text" placeholder="Search node by title (e.g., 'API key')" />
-        <button id="searchBtn" class="btn-secondary">Find</button>
+        <input id="searchInput" type="text" placeholder="Search nodes (e.g., 'API key', 'teams')" />
+        <button id="searchBtn" class="btn-ghost">Find</button>
       </div>
 
-      <div class="details" id="details">
-        <div class="node-title">Welcome</div>
-        <div class="node-text">Click any node on the diagram to see the step details, checklist items, and links to runbook templates. Use the Export PNG button to snapshot the chart for documentation or presentations.</div>
-        <div class="legend">Legend: Blue = Account / Setup, Green = Data & Mapping, Orange = Ops & Monitoring, Purple = Automation / Tools</div>
+      <div class="details" id="details" tabindex="0">
+        <div class="node-title">Welcome — Start here</div>
+        <div class="meta">No node selected. Click any node to see details.</div>
+        <div>
+          <div class="section-title">Quick legend</div>
+          <div class="pill">Account / Setup</div>
+          <div class="pill">Data & Mapping</div>
+          <div class="pill">Ops / Monitoring</div>
+          <div class="pill">Automation / Tools</div>
+          <div class="legend">Focus: fidelity, auditability, explicit data inputs and who/what owns them.</div>
+        </div>
       </div>
 
-      <div style="display:flex;gap:8px;justify-content:space-between">
-        <a id="downloadHtml" class="link" href="#">Download HTML</a>
-        <a class="link" href="https://github.com/">Open in GitHub</a>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <a id="githubLink" class="link" href="#" target="_blank" rel="noreferrer">Open repo</a>
+        <div style="font-size:12px;color:var(--muted)">Single-file HTML — ready for Pages</div>
       </div>
-    </div>
+    </aside>
   </div>
 
-  <footer>Generated interactive onboarding flow — copy this file to GitHub Pages (single-file HTML)</footer>
+  <footer>Interactive flow — export for runbooks and audits</footer>
 
+  <!-- Script: create graph, node metadata, interactions -->
   <script>
-    // Define nodes and detailed content (based on Sai Kanapur transcript)
-    const NODE_DETAILS = {
-      'pre_onboarding':{
-        title:'Pre-onboarding (Cognito form)',
-        body:`EROAD sends the Cognito onboarding form. The form should include vehicle regos, locations, escalation contacts, and other onboarding data. Use this as canonical input for bulk uploads.`
+    // Node metadata: operational context, inputs (data dependencies), downstream, gaps, ideal improvements
+    const NODE_INFO = {
+      'pre_onboarding': {
+        title: 'Pre-onboarding (Cognito Form)',
+        category: 'Account / Setup',
+        context: 'EROAD sends Cognito onboarding form to the customer. This is the canonical source of truth for vehicle, location, and escalation contact data.',
+        inputs: ['Vehicle regos', 'Physical locations', 'Escalation contacts', 'Org metadata'],
+        downstream: ['sales_actions','teams_users','fleet_mapping'],
+        gaps: ['Customers omit timezone per vehicle', 'Inconsistent naming of groups'],
+        ideal: 'Make timezone and default "Welfare First" group required fields. Validate phone/email format at submission.'
       },
-      'sales_actions':{
-        title:'Sales actions',
-        body:`Sales creates MyEROAD account (username + temp password) and generates the partner API key through the secure vault link. Save credentials in a secure vault; if the vault link expires, request resend.`
+      'sales_actions': {
+        title: 'Sales actions: MyEROAD account & API key',
+        category: 'Account / Setup',
+        context: 'Sales creates temporary MyEROAD account and requests partner API key (via secure vault link). Both items are required to begin integrations.',
+        inputs: ['MyEROAD username/password', 'Partner API key (vault link)'],
+        downstream: ['enterprise_creation','add_integration'],
+        gaps: ['Vault link expiry', 'API key type confusion (partner vs integration)'],
+        ideal: 'Automate API key issuance into a shared secrets manager accessible to onboarding team; include key metadata and expiry audit.'
       },
-      'enterprise_creation':{
-        title:'Enterprise creation',
-        body:`Create a new Welfare First enterprise for each customer (one enterprise per customer). Use Gethome-safe signup or request. Ensure Welfare First branding and central account settings are configured.`
+      'enterprise_creation': {
+        title: 'Enterprise creation (Welfare First account)',
+        category: 'Account / Setup',
+        context: 'Create the enterprise; branding and top-level settings are configured here. One enterprise per customer (enterprise → single API key).',
+        inputs: ['Enterprise name', 'Primary admin contact'],
+        downstream: ['add_integration','organizations','call_center_setup'],
+        gaps: ['Manual creation by Gethome-safe in some cases', 'Branding inconsistencies'],
+        ideal: 'Self-service enterprise creation with prefilled template and audit log; require API key association at creation.'
       },
-      'add_integration':{
-        title:'Add API key & Integration',
-        body:`Account → Configure → Integrations → add partner EROAD API key; enable driver sync. Validate API key length; if malformed, ask EROAD to regenerate.`
+      'add_integration': {
+        title: 'Add Integration & API Key',
+        category: 'Data & Mapping',
+        context: 'Paste partner API key into Account → Integrations and enable driver sync. Valid key pulls groups and vehicles from MyEROAD.',
+        inputs: ['Partner API key'],
+        downstream: ['fleet_mapping','credentials'],
+        gaps: ['Malformed/short keys', 'no programmatic validation with clear error messaging'],
+        ideal: 'Immediate validation with preflight check listing groups and sample vehicles; automated alert if key expires.'
       },
-      'fleet_mapping':{
-        title:'Fleet mapping & groups',
-        body:`Ask customer to create a 'Welfare First' group in MyEROAD or select correct groups. If vehicles missing, verify API key and group selection.`
+      'fleet_mapping': {
+        title: 'Fleet mapping & Groups',
+        category: 'Data & Mapping',
+        context: 'Identify correct MyEROAD groups (customer should create a "Welfare First" group). Mapping determines which vehicles are monitored.',
+        inputs: ['Group selection', 'API-driven group list'],
+        downstream: ['organizations','vehicle_mapping'],
+        gaps: ['Wrong group selected → missing vehicles', 'naming conventions differ across customers'],
+        ideal: 'Require creation of standardized "Welfare First" group; preflight indicates % vehicles included vs total.'
       },
-      'organizations':{
-        title:'Create Organizations',
-        body:`Create orgs under the enterprise, set primary contact, URL segment, and timezone. For multi-region customers, create multiple orgs to reflect timezone/escalation differences.`
+      'organizations': {
+        title: 'Create Organizations (per-region/branch)',
+        category: 'Account / Setup',
+        context: 'Create org(s) under enterprise. Org-level fields: primary contact, URL segment, timezone. Multi-region customers may need multiple orgs.',
+        inputs: ['Org name', 'Primary contact', 'Timezone'],
+        downstream: ['teams_users','call_center_setup','timezones'],
+        gaps: ['Timezone mismatch across portal and vehicles', 'unclear mapping of org ↔ business unit'],
+        ideal: 'Auto-suggest orgs from Cognito data; enforce timezone & contact fields; link org to MyEROAD group.'
       },
-      'call_center_setup':{
-        title:'Call center setup',
-        body:`Get Gethome-safe to add the enterprise to the call center dashboard. Enable the org call center toggle once teams/users are configured. Don't enable early to avoid spurious alerts.`
+      'call_center_setup': {
+        title: 'Call center setup & enablement',
+        category: 'Ops / Monitoring',
+        context: 'Gethome-safe must add enterprise to call center dashboard. Toggle to enable call center per organization when configuration is complete.',
+        inputs: ['Enterprise added to call center', 'Call center toggle enable'],
+        downstream: ['monitoring_ops'],
+        gaps: ['Manual step handled by another team (dependency)', 'accidental enabling before readiness'],
+        ideal: 'Automated workflow / checklist gating: call center is enabled only after preflight checks pass.'
       },
-      'alert_settings':{
-        title:'Alert notification settings',
-        body:`Alert follow-up emails are disabled by default to avoid customer confusion; enable only on request. Escalation contacts are editable per org/team.`
+      'alert_settings': {
+        title: 'Alert notification settings',
+        category: 'Ops / Monitoring',
+        context: 'Organizational toggle controls follow-up email notifications. Default is OFF to avoid customer confusion.',
+        inputs: ['Toggle state', 'Escalation contacts'],
+        downstream: ['monitoring_ops'],
+        gaps: ['Customers are surprised by emails if enabled prematurely'],
+        ideal: 'Make default OFF with explicit customer confirmation and audit entry recording change.'
       },
-      'teams_users':{
-        title:'Teams & Users',
-        body:`Create teams first. Bulk-upload users (≤100 per batch) using onboarding data; use dummy emails + CC Sai to avoid spamming customers with verification emails. Assign users to teams and mark team leaders.`
+      'teams_users': {
+        title: 'Teams & Users (bulk vs manual)',
+        category: 'Account / Setup',
+        context: 'Create teams first. Bulk upload users (≤100 per batch). Often create dummy emails to avoid spamming verifications; then replace with customer emails.',
+        inputs: ['Bulk CSV from Cognito', 'Team definitions'],
+        downstream: ['vehicle_mapping','automation'],
+        gaps: ['Manual verification clicks', 'no ordered escalation fields'],
+        ideal: 'Support CSV with timezone & escalation priority columns; automated email-confirm bot or SSO provisioning.'
       },
-      'vehicle_mapping':{
-        title:'Vehicle → User mapping',
-        body:`Map vehicles to users at the account level (vehicle detail → assign user). This is critical — unmapped vehicles won't show alerts on the dashboard.`
+      'vehicle_mapping': {
+        title: 'Vehicle → User mapping',
+        category: 'Data & Mapping',
+        context: 'Map each vehicle to a user at the account level. This is critical — unmapped vehicles won’t show alerts in the dashboard.',
+        inputs: ['Vehicle rego', 'User identity'],
+        downstream: ['monitoring_ops'],
+        gaps: ['Manual mapping at account level (error-prone)'],
+        ideal: 'Allow bulk vehicle-to-user mapping by rego; show % mapped with warnings for unmapped vehicles.'
       },
-      'monitoring_ops':{
-        title:'Monitoring & Operator workflow',
-        body:`Operators view the call center dashboard, open events, click Start Follow Up, follow SOP steps and mark Done for each step. For collision/rollover/panic, read the event label first (no footage). Save activity PDFs and upload to the portal.`
+      'monitoring_ops': {
+        title: 'Monitoring & Operator workflow',
+        category: 'Ops / Monitoring',
+        context: 'Operators use call center dashboard to triage. They must read event labels (some events have no footage). Start Follow Up → complete SOP steps → Save PDF.',
+        inputs: ['Activity events', 'Event labels', 'Footage (when available)'],
+        downstream: ['after_alerts'],
+        gaps: ['Operators skip "Done" steps', 'collision/panic events have no footage but still require escalation'],
+        ideal: 'Structured SOP checklist embedded in UI that forces completion and stores timestamps for audit.'
       },
-      'after_alerts':{
-        title:'After-alert handling',
-        body:`When actioned, save activity page as PDF, upload to portal, change status to 'reviewed'. Attach SOP or coaching documents as needed.`
+      'after_alerts': {
+        title: 'After-alert handling & records',
+        category: 'Ops / Monitoring',
+        context: 'Save activity as PDF, upload to portal, change status to reviewed, attach coaching/SOP docs as needed for recordkeeping.',
+        inputs: ['Activity PDF', 'Notes', 'Status changes'],
+        downstream: [],
+        gaps: ['Manual upload step', 'no centralized coaching document repository'],
+        ideal: 'Auto-generate activity report and store in central document store; link to training workflows.'
       },
-      'timezones':{
-        title:'Timezones & edge cases',
-        body:`Ensure org and vehicle timezones are set correctly to prevent miscommunication. Multi-timezone fleets may need per-vehicle timezone assignment.`
+      'timezones': {
+        title: 'Timezones (edge cases)',
+        category: 'Data & Mapping',
+        context: 'Org-level timezone may differ from vehicle local timezone. For multi-region fleets, misconfigured times lead to escalation errors.',
+        inputs: ['Org timezone', 'Vehicle timezone'],
+        downstream: ['monitoring_ops','after_alerts'],
+        gaps: ['Timezone not included in Cognito by default'],
+        ideal: 'Make timezone per vehicle mandatory; show local time in event view with conversion note.'
       },
-      'credentials':{
-        title:'Credentials & secrets',
-        body:`Move credentials from Teams doc to a password vault (LastPass). Use standardized temporary admin emails (e.g., Sai.+customer@firstsecurity.co.nz) when creating accounts.`
+      'credentials': {
+        title: 'Credentials & Secrets',
+        category: 'Automation / Tools',
+        context: 'Current practice: Teams doc or shared email used for temporary creds. Suggest LastPass or enterprise vault.',
+        inputs: ['Vault entries', 'Admin emails'],
+        downstream: ['add_integration','sales_actions'],
+        gaps: ['Security risk with Teams doc', 'no programmatic access for automation'],
+        ideal: 'Use centralized secrets manager with RBAC and API access for automation tools.'
       },
-      'automation':{
-        title:'Automation opportunities',
-        body:`Implement a UI bot to auto-confirm verification emails for large bulk uploads. Consider a browser extension for quick portal switching (InfoSec approval required).`
+      'automation': {
+        title: 'Automation Opportunities',
+        category: 'Automation / Tools',
+        context: 'Opportunities: email-confirmation bot, browser extension for quick portal switching, preflight checks for API key & group validity.',
+        inputs: ['Provisioning bot', 'Browser extension', 'Preflight scripts'],
+        downstream: ['teams_users','call_center_setup','add_integration'],
+        gaps: ['Some automation exists (Tony bot) but not generalised or hardened for scale'],
+        ideal: 'Formalize automation: SSO provisioning, bulk mapping APIs, and self-service onboarding with audit logs.'
       }
     };
 
-    // cytoscape nodes & edges
+    // Graph elements (nodes + edges)
     const elements = [
-      { data: { id: 'pre_onboarding', label: 'Pre-onboarding' } },
-      { data: { id: 'sales_actions', label: 'Sales actions' } },
-      { data: { id: 'enterprise_creation', label: 'Enterprise
-creation' } },
-      { data: { id: 'add_integration', label: 'Add API Key
-& Integration' } },
-      { data: { id: 'fleet_mapping', label: 'Fleet Mapping
-& Groups' } },
-      { data: { id: 'organizations', label: 'Organizations' } },
-      { data: { id: 'call_center_setup', label: 'Call Center
-Setup' } },
-      { data: { id: 'alert_settings', label: 'Alert
-Settings' } },
-      { data: { id: 'teams_users', label: 'Teams &
-Users' } },
-      { data: { id: 'vehicle_mapping', label: 'Vehicle →
-User Mapping' } },
-      { data: { id: 'monitoring_ops', label: 'Monitoring &
-Operator Flow' } },
-      { data: { id: 'after_alerts', label: 'After-Alert
-Handling' } },
-      { data: { id: 'timezones', label: 'Timezones' } },
-      { data: { id: 'credentials', label: 'Credentials
-& Secrets' } },
-      { data: { id: 'automation', label: 'Automation
-Opportunities' } },
+      // nodes
+      { data: { id:'pre_onboarding', label:'Pre-onboarding\n(Cognito form)', group:'setup' } },
+      { data: { id:'sales_actions', label:'Sales: Account\n& API key', group:'setup' } },
+      { data: { id:'enterprise_creation', label:'Enterprise\ncreation', group:'setup' } },
+      { data: { id:'add_integration', label:'Add Integration\n& API key', group:'data' } },
+      { data: { id:'fleet_mapping', label:'Fleet mapping\n& groups', group:'data' } },
+      { data: { id:'organizations', label:'Create\nOrganizations', group:'setup' } },
+      { data: { id:'call_center_setup', label:'Call center\nsetup', group:'ops' } },
+      { data: { id:'alert_settings', label:'Alert\nsettings', group:'ops' } },
+      { data: { id:'teams_users', label:'Teams &\nUsers (bulk)', group:'setup' } },
+      { data: { id:'vehicle_mapping', label:'Vehicle →\nUser mapping', group:'data' } },
+      { data: { id:'monitoring_ops', label:'Monitoring &\nOperator workflow', group:'ops' } },
+      { data: { id:'after_alerts', label:'After-alert\nhandling', group:'ops' } },
+      { data: { id:'timezones', label:'Timezones', group:'data' } },
+      { data: { id:'credentials', label:'Credentials\n& Secrets', group:'tools' } },
+      { data: { id:'automation', label:'Automation\nOpportunities', group:'tools' } },
 
-      // edges
-      { data: { source: 'pre_onboarding', target: 'sales_actions' } },
-      { data: { source: 'sales_actions', target: 'enterprise_creation' } },
-      { data: { source: 'enterprise_creation', target: 'add_integration' } },
-      { data: { source: 'add_integration', target: 'fleet_mapping' } },
-      { data: { source: 'fleet_mapping', target: 'organizations' } },
-      { data: { source: 'organizations', target: 'teams_users' } },
-      { data: { source: 'teams_users', target: 'vehicle_mapping' } },
-      { data: { source: 'vehicle_mapping', target: 'monitoring_ops' } },
-      { data: { source: 'monitoring_ops', target: 'after_alerts' } },
-      { data: { source: 'organizations', target: 'call_center_setup' } },
-      { data: { source: 'call_center_setup', target: 'monitoring_ops' } },
-      { data: { source: 'add_integration', target: 'credentials' } },
-      { data: { source: 'teams_users', target: 'automation' } },
-      { data: { source: 'organizations', target: 'timezones' } }
+      // edges (directed)
+      { data: { source:'pre_onboarding', target:'sales_actions' } },
+      { data: { source:'sales_actions', target:'enterprise_creation' } },
+      { data: { source:'enterprise_creation', target:'add_integration' } },
+      { data: { source:'add_integration', target:'fleet_mapping' } },
+      { data: { source:'fleet_mapping', target:'organizations' } },
+      { data: { source:'organizations', target:'teams_users' } },
+      { data: { source:'teams_users', target:'vehicle_mapping' } },
+      { data: { source:'vehicle_mapping', target:'monitoring_ops' } },
+      { data: { source:'monitoring_ops', target:'after_alerts' } },
+      { data: { source:'organizations', target:'call_center_setup' } },
+      { data: { source:'call_center_setup', target:'monitoring_ops' } },
+      { data: { source:'add_integration', target:'credentials' } },
+      { data: { source:'teams_users', target:'automation' } },
+      { data: { source:'organizations', target:'timezones' } }
     ];
 
-    // init cytoscape
+    // Style mapping based on group
+    const groupColor = {
+      'setup': '#06b6d4',
+      'data': '#60a5fa',
+      'ops': '#f59e0b',
+      'tools': '#a78bfa'
+    };
+
+    // Initialize Cytoscape
     const cy = cytoscape({
       container: document.getElementById('cy'),
       elements,
       style: [
-        { selector: 'node', style: { 'label': 'data(label)', 'text-wrap':'wrap','text-valign':'center','text-halign':'center','background-color':'#0ea5a9','color':'#022627','width':'label','height':'label','padding':'14px','font-size':'12px','shape':'roundrectangle','text-margin-y':0 } },
-        { selector: 'edge', style: { 'curve-style':'bezier','target-arrow-shape':'triangle','line-color':'rgba(255,255,255,0.08)','target-arrow-color':'rgba(255,255,255,0.08)','width':2 } },
-        { selector: ':selected', style: { 'border-width':3,'border-color':'#ffd166' } }
+        { selector: 'node', style: {
+            'label': 'data(label)',
+            'text-wrap': 'wrap',
+            'text-valign': 'center',
+            'text-halign': 'center',
+            'background-color': ele => {
+              const g = ele.data('group'); return groupColor[g] || '#0ea5a9';
+            },
+            'color':'#021617',
+            'font-size': 12,
+            'shape':'roundrectangle',
+            'padding':'10px',
+            'width':'label',
+            'height':'label',
+            'border-width':2,
+            'border-color':'rgba(0,0,0,0.2)'
+          }
+        },
+        { selector: 'edge', style: {
+            'curve-style':'bezier',
+            'target-arrow-shape':'triangle',
+            'target-arrow-color':'rgba(255,255,255,0.3)',
+            'line-color':'rgba(255,255,255,0.06)',
+            'width':2
+          }
+        },
+        { selector: 'node:selected', style: { 'border-color':'#ffd166','border-width':3 } }
       ],
-      layout: { name: 'dagre', rankDir: 'LR', nodeSep: 40, rankSep: 80 }
+      layout: { name:'dagre', rankDir:'LR', nodeSep: 50, rankSep: 70 }
     });
 
-    // click handler to show details
-    cy.on('tap', 'node', function(evt){
+    // Fit on ready
+    cy.ready(() => cy.fit());
+
+    // Node click handler: populate side panel with full node info
+    cy.on('tap', 'node', (evt) => {
       const id = evt.target.id();
-      const info = NODE_DETAILS[id];
-      const detailsEl = document.getElementById('details');
-      detailsEl.innerHTML = `<div class=\"node-title\">${info.title}</div><div class=\"node-text\">${info.body.replace(/\n/g,'<br/>')}</div>`;
+      const info = NODE_INFO[id];
+      const el = document.getElementById('details');
 
-      // zoom into node
-      cy.animate({ center: { eles: evt.target }, zoom: { level: 1.4 }, duration: 300 });
+      // Create HTML markup for the right panel with clear audit fields
+      el.innerHTML = `
+        <div class="node-title">${info.title}</div>
+        <div class="meta"><strong>Category:</strong> ${info.category}</div>
+        <div><strong>Operational context:</strong><div style="margin-top:6px">${escapeHtml(info.context)}</div></div>
+        <div class="section-title">Data / Inputs</div>
+        <div style="margin-top:6px">${info.inputs.map(i=>'• '+escapeHtml(i)).join('<br>')}</div>
+        <div class="section-title">Downstream / Effects</div>
+        <div style="margin-top:6px">${info.downstream.map(d=>'• '+escapeHtml(d)).join('<br>')}</div>
+        <div class="section-title">Known gaps (from transcript)</div>
+        <div style="margin-top:6px;color:${info.gaps? 'var(--muted)':'#9ca3af'}">${escapeHtml(info.gaps || 'None recorded')}</div>
+        <div class="section-title">Ideal-state improvements</div>
+        <div style="margin-top:6px;color:#dbeafe">${escapeHtml(info.ideal || '—')}</div>
+      `;
+
+      // center & zoom to node with animation
+      cy.animate({ center: { eles: evt.target }, zoom: { level: 1.25 }, duration: 300 });
     });
 
-    // controls
-    document.getElementById('fitBtn').addEventListener('click',()=>cy.fit());
-    document.getElementById('zoomIn').addEventListener('click',()=>cy.zoom(cy.zoom()+0.2));
-    document.getElementById('zoomOut').addEventListener('click',()=>cy.zoom(cy.zoom()-0.2));
+    // Helper to escape HTML (for safety)
+    function escapeHtml(str){ return String(str).replace(/[&<>"]/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
 
-    // export PNG
-    document.getElementById('exportPng').addEventListener('click',()=>{
-      const png64 = cy.png({full:true,scale:2});
-      const a = document.createElement('a'); a.href = png64; a.download = 'welfare-first-onboarding.png'; a.click();
+    // Controls
+    document.getElementById('fitBtn').addEventListener('click', ()=> cy.fit());
+    document.getElementById('zoomIn').addEventListener('click', ()=> cy.zoom(cy.zoom()+0.2));
+    document.getElementById('zoomOut').addEventListener('click', ()=> cy.zoom(cy.zoom()-0.2));
+
+    // Export PNG
+    document.getElementById('exportPng').addEventListener('click', ()=>{
+      try {
+        const png64 = cy.png({ full: true, scale: 2 });
+        const a = document.createElement('a'); a.href = png64; a.download = 'welfare-first-onboarding.png'; a.click();
+      } catch(e){ alert('Export failed: '+e.message); }
     });
 
-    // search
-    document.getElementById('searchBtn').addEventListener('click',()=>{
-      const q = document.getElementById('searchInput').value.toLowerCase().trim();
-      if(!q) return; const found = cy.nodes().filter(n=>n.data('label').toLowerCase().includes(q));
-      if(found.length>0){ cy.elements().unselect(); found.select(); cy.animate({center:{eles:found},zoom:1.2,duration:300}); found.flash = setTimeout(()=>found.unselect(),1500); }
-      else alert('No node found for: '+q);
-    });
-
-    // download this HTML file
-    document.getElementById('downloadHtml').addEventListener('click',function(e){
+    // Download self-contained HTML
+    document.getElementById('downloadHtml').addEventListener('click', (e)=>{
       e.preventDefault();
-      const html = `<!doctype html>\n${document.documentElement.outerHTML}`;
-      const blob = new Blob([html],{type:'text/html'});
+      // Compose the current document HTML (this file)
+      const doc = '<!doctype html>\\n' + document.documentElement.outerHTML;
+      const blob = new Blob([doc], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = 'welfare-first-interactive-onboarding.html'; a.click(); URL.revokeObjectURL(url);
+      const a = document.createElement('a'); a.href = url; a.download = 'welfare-first-onboarding-interactive.html'; a.click();
+      URL.revokeObjectURL(url);
     });
 
-    // initial fit
-    cy.ready(()=>cy.fit());
+    // Search logic (by label or title)
+    document.getElementById('searchBtn').addEventListener('click', ()=> {
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      if(!q) return;
+      const matches = cy.nodes().filter(n => {
+        return n.data('label').toLowerCase().includes(q) || (NODE_INFO[n.id()] && NODE_INFO[n.id()].title.toLowerCase().includes(q));
+      });
+      if(matches.length === 0) { alert('No node found for: '+q); return; }
+      cy.elements().unselect();
+      matches.select();
+      cy.animate({ center: { eles: matches }, zoom: { level: 1.2 }, duration: 300 });
+      // populate panel with first match
+      const id = matches[0].id(); document.querySelector('#cy').dispatchEvent(new CustomEvent('select-node', { detail: id }));
+    });
+
+    // support programmatic select -> show details (used by search)
+    document.getElementById('cy').addEventListener('select-node', (e)=>{
+      const id = e.detail;
+      const node = cy.getElementById(id);
+      if(node) node.trigger('tap');
+    });
+
+    // Accessibility: allow keyboard navigation: tab focus + arrow keys to pan
+    window.addEventListener('keydown', (ev) => {
+      if(ev.key === 'ArrowLeft') cy.panBy({ x: 40, y: 0 });
+      if(ev.key === 'ArrowRight') cy.panBy({ x: -40, y: 0 });
+      if(ev.key === 'ArrowUp') cy.panBy({ x: 0, y: 40 });
+      if(ev.key === 'ArrowDown') cy.panBy({ x: 0, y: -40 });
+    });
+
+    // Make sure graph always fits on window resize
+    window.addEventListener('resize', ()=> cy.fit());
   </script>
 </body>
 </html>
