@@ -1,863 +1,238 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EROAD - Welfare First Onboarding Process Flow</title>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Welfare First — Interactive Onboarding Flowchart</title>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    }
+    :root{--bg:#0f172a;--card:#0b1220;--accent:#06b6d4;--text:#e6eef6}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    body{background:linear-gradient(180deg,#071029 0%, #071827 60%);color:var(--text)}
+    .app{display:grid;grid-template-columns:1fr 360px;gap:18px;height:100vh;padding:18px}
+    .canvas{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 30px rgba(2,6,23,.6)}
+    #cy{width:100%;height:100%;min-height:740px;border-radius:8px}
+    .sidebar{background:rgba(255,255,255,0.03);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+    .title{font-weight:700;font-size:18px;margin-bottom:6px}
+    .details{flex:1;overflow:auto;padding:8px;background:rgba(255,255,255,0.02);border-radius:8px}
+    .controls{display:flex;gap:8px}
+    button{background:var(--accent);border:0;padding:8px 10px;border-radius:8px;color:#042027;font-weight:600;cursor:pointer}
+    .btn-secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
+    .node-title{font-weight:700;margin-bottom:6px}
+    .node-text{font-size:13px;line-height:1.4;color:rgba(230,238,246,.9)}
+    .legend{font-size:12px;color:rgba(230,238,246,.7);margin-top:8px}
+    footer{position:fixed;left:18px;bottom:18px;color:rgba(230,238,246,.6);font-size:12px}
+    .search{display:flex;gap:8px}
+    input[type=text]{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text)}
+    a.link{color:var(--accent);font-weight:600;text-decoration:none}
   </style>
+  <!-- Cytoscape.js CDN -->
+  <script src="https://unpkg.com/cytoscape@3.24.0/dist/cytoscape.min.js"></script>
+  <script src="https://unpkg.com/cytoscape-dagre@2.4.0/cytoscape-dagre.js"></script>
+  <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
 </head>
 <body>
-  <div id="root"></div>
-  
-  <script type="text/babel">
-    const { useState } = React;
-    
-    // Lucide React Icons (inline SVG components)
-    const Zap = ({ className }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    );
-    
-    const CheckCircle = ({ className }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    );
-    
-    const AlertCircle = ({ className }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    );
-    
-    const XCircle = ({ className }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    );
-    
-    const Info = ({ className }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    );
-    
-    const Eye = ({ className }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-      </svg>
-    );
-    
-    const EyeOff = ({ className }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-      </svg>
-    );
-    
-    const ChevronRight = ({ className }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
-    );
+  <div class="app">
+    <div class="canvas">
+      <div id="cy"></div>
+    </div>
 
-    const OnboardingFlowchart = () => {
-      const [selectedNode, setSelectedNode] = useState(null);
-      const [showIdealState, setShowIdealState] = useState(false);
+    <div class="sidebar">
+      <div>
+        <div class="title">Welfare First — Onboarding Flow</div>
+        <div style="font-size:13px;color:rgba(230,238,246,.7)">Click nodes to reveal details. Drag canvas to pan, scroll to zoom.</div>
+      </div>
 
-      const nodeDetails = {
-        signup: {
-          title: "New Customer Signs Up",
-          type: "trigger",
-          details: "Sales Operations receives new customer signup (e.g., RNE Transport, BOOTHBY LOGISTICS)",
-          status: "trigger",
-          dependencies: [],
-          currentState: "Manual handoff to Sales Ops team",
-          idealState: "Automated workflow trigger with customer data"
-        },
-        parallel: {
-          title: "EROAD Sales Ops - Parallel Actions",
-          type: "process",
-          details: "Three automated emails sent simultaneously:",
-          status: "current",
-          subSteps: [
-            "Email 1: MyEROAD username + temp password → Welfare First",
-            "Email 2: API vault link confirmation → Welfare First", 
-            "Email 3: Onboarding form → Customer"
-          ],
-          dependencies: ["New customer signup"],
-          currentState: "All three emails triggered by Sales Ops",
-          idealState: "Same process, works well"
-        },
-        myeroad: {
-          title: "MyEROAD Portal Access",
-          type: "process",
-          details: "Welfare First receives credentials and accesses portal",
-          status: "current",
-          subSteps: [
-            "Receive automated email with username + temp password",
-            "Log into MyEROAD portal",
-            "Reset password",
-            "Confirm access (assumed complete - no notification back to EROAD)"
-          ],
-          dependencies: ["EROAD sends credentials"],
-          currentState: "✅ Access assumed complete unless issue reported",
-          idealState: "⚠️ GAP: No confirmation loop. Ideal: Auto-confirmation to EROAD when first login successful",
-          gap: "No visibility on access completion"
-        },
-        apiVault: {
-          title: "API Key Retrieval",
-          type: "process", 
-          details: "Welfare First accesses secure vault for API keys",
-          status: "current",
-          subSteps: [
-            "Receive vault link email",
-            "Access vault (link may expire ⚠️)",
-            "Retrieve API key + secret",
-            "Store securely"
-          ],
-          dependencies: ["API vault email received"],
-          failures: [
-            "Vault link expired → Contact Sales Ops for new link",
-            "API keys incorrect → Error visible on WF dashboard → Request new keys"
-          ],
-          currentState: "Manual retrieval, manual error handling",
-          idealState: "Automated key rotation alerts, extended vault link validity"
-        },
-        apiIntegration: {
-          title: "API Integration & Verification",
-          type: "process",
-          details: "Welfare First integrates API and verifies vehicle data",
-          status: "current",
-          subSteps: [
-            "Add API keys to Welfare First system",
-            "Instant verification: Vehicles appear on dashboard",
-            "If error → API keys incorrect or vault link expired"
-          ],
-          dependencies: ["API keys retrieved", "Enterprise account created"],
-          currentState: "✅ Instant feedback on success/failure",
-          idealState: "Same - works well. Automated notification to Sales Ops if integration fails",
-          failures: [
-            "API Key Error: Immediate dashboard error → Contact Sales Ops",
-            "Expired Vault Link: Cannot retrieve keys → Contact Sales Ops"
-          ]
-        },
-        customerForm: {
-          title: "Customer Onboarding Form",
-          type: "process",
-          details: "Customer completes onboarding form with critical data",
-          status: "current",
-          subSteps: [
-            "Customer receives onboarding form email",
-            "Fills vehicle rego (required)",
-            "Fills escalation contacts: name + phone (minimum required)",
-            "Submits form"
-          ],
-          dependencies: ["Form email sent by EROAD"],
-          currentState: "If incomplete → Welfare First manually reaches out to customer or Sales Ops",
-          idealState: "Form validation with mandatory field checks before submission",
-          gap: "No automated validation or follow-up for incomplete forms",
-          blocking: "Cannot proceed without: Vehicle rego, Escalation contact name, Phone number"
-        },
-        wfSetup: {
-          title: "Welfare First Setup & Configuration",
-          type: "process",
-          details: "Manual setup process tracked in Excel",
-          status: "warning",
-          subSteps: [
-            "Create Enterprise Account in WF system",
-            "Add & verify API keys → Vehicles appear",
-            "Map vehicles from customer form",
-            "Add escalation contacts",
-            "Update Excel tracker with status"
-          ],
-          excelStatuses: [
-            "API key & Integration Status",
-            "Onboarding form",
-            "myEROAD Logins", 
-            "WF Monitoring Status: Live"
-          ],
-          dependencies: ["MyEROAD access", "API keys verified", "Customer form completed"],
-          currentState: "⚠️ Manual Excel tracking, no automated workflow",
-          idealState: "Automated status tracking with real-time dashboard showing completion %",
-          gap: "No centralized onboarding management tool"
-        },
-        wfLiveEmail: {
-          title: "Welfare First Notifies 'Live'",
-          type: "process",
-          details: "Welfare First emails Sales Ops confirming monitoring is ready",
-          status: "warning",
-          subSteps: [
-            "All setup complete",
-            "Email Sales Ops: 'Welfare First is live with monitoring for [Customer]'",
-            "Sales Ops notifies customer (assumed - WF not copied)"
-          ],
-          dependencies: ["All WF setup complete"],
-          currentState: "⚠️ GAP: No visibility on what Sales Ops does next. Customer notification unclear.",
-          idealState: "Automated notification to Sales Ops + Customer with CC to WF for confirmation loop",
-          gap: "Communication breakdown - WF loses visibility after this point"
-        },
-        monitoringActivation: {
-          title: "🚨 CRITICAL GAP: Monitoring Activation",
-          type: "gap",
-          details: "Customer controls monitoring ON/OFF in MyEROAD portal",
-          status: "critical-gap",
-          subSteps: [
-            "Customer receives notification from EROAD (assumed)",
-            "Customer manually toggles monitoring ON in MyEROAD",
-            "⚠️ Welfare First has ZERO visibility on this action",
-            "⚠️ No timestamp captured for billing alignment",
-            "⚠️ Customer may turn OFF monitoring without notification"
-          ],
-          dependencies: ["WF notifies live", "EROAD notifies customer (assumed)"],
-          currentState: "❌ COMPLETE BLIND SPOT - No API, no notification, no visibility",
-          idealState: "🎯 EROAD sends automated webhook/notification when monitoring toggled ON/OFF with timestamp + vehicle list",
-          gap: "BILLING MISALIGNMENT RISK - WF bills from go-live date, but actual monitoring activation date unknown",
-          impact: "High - Affects billing accuracy, customer satisfaction, operational transparency"
-        },
-        monitoring: {
-          title: "Active Monitoring",
-          type: "process",
-          details: "Welfare First monitors vehicles and manages alerts",
-          status: "current",
-          subSteps: [
-            "Monitor vehicles via API data",
-            "Access fatigue alert footage in MyEROAD portal",
-            "Manage escalations via contacts from onboarding form"
-          ],
-          dependencies: ["Monitoring activated by customer"],
-          currentState: "✅ Operational - but no visibility on customer's monitoring status",
-          idealState: "Real-time monitoring status visible in WF dashboard"
-        },
-        offboardRequest: {
-          title: "Offboarding Request",
-          type: "process",
-          details: "Customer requests vehicle or account offboarding",
-          status: "current",
-          subSteps: [
-            "Customer emails Welfare First (current)",
-            "Future: Customer uses Change Manager Portal (under security assessment)"
-          ],
-          dependencies: ["Customer decision to offboard"],
-          currentState: "Manual email request",
-          idealState: "Change Manager Portal with automated workflow"
-        },
-        wfOffboard: {
-          title: "Welfare First Offboards",
-          type: "process",
-          details: "Welfare First removes vehicle/account from system",
-          status: "critical-gap",
-          subSteps: [
-            "Receive offboarding request",
-            "Remove vehicle from WF system (or delete entire account)",
-            "⚠️ EROAD not automatically notified"
-          ],
-          dependencies: ["Offboarding request received"],
-          currentState: "❌ GAP: No automatic notification to EROAD",
-          idealState: "🎯 Automated notification to EROAD with offboard date for billing alignment",
-          gap: "EROAD continues billing after WF offboards"
-        },
-        billingMisalignment: {
-          title: "🚨 CRITICAL GAP: Billing Misalignment",
-          type: "gap",
-          details: "EROAD continues billing after Welfare First offboards",
-          status: "critical-gap",
-          subSteps: [
-            "WF offboards vehicle/customer",
-            "EROAD unaware of offboarding",
-            "EROAD continues billing customer",
-            "Manual reconciliation required for prorata billing",
-            "Date misalignment between WF and EROAD"
-          ],
-          dependencies: ["Offboarding process"],
-          currentState: "❌ Manual reconciliation, billing disputes risk",
-          idealState: "🎯 Automated sync: WF offboarding triggers EROAD billing stop with exact timestamp",
-          impact: "High - Financial reconciliation, customer disputes, operational overhead"
-        }
-      };
+      <div class="controls">
+        <button id="fitBtn">Fit</button>
+        <button id="zoomIn">Zoom +</button>
+        <button id="zoomOut">Zoom -</button>
+        <button id="exportPng" class="btn-secondary">Export PNG</button>
+      </div>
 
-      const getStatusIcon = (status) => {
-        switch(status) {
-          case 'trigger': return <Zap className="w-5 h-5 text-blue-600" />;
-          case 'current': return <CheckCircle className="w-5 h-5 text-emerald-500" />;
-          case 'warning': return <AlertCircle className="w-5 h-5 text-amber-500" />;
-          case 'critical-gap': return <XCircle className="w-5 h-5 text-rose-500" />;
-          default: return <Info className="w-5 h-5 text-slate-500" />;
-        }
-      };
+      <div class="search">
+        <input id="searchInput" type="text" placeholder="Search node by title (e.g., 'API key')" />
+        <button id="searchBtn" class="btn-secondary">Find</button>
+      </div>
 
-      const getNodeStyle = (status) => {
-        const base = "transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer";
-        switch(status) {
-          case 'trigger': 
-            return `${base} bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/50`;
-          case 'current': 
-            return `${base} bg-white border-2 border-emerald-400 shadow-md hover:border-emerald-500`;
-          case 'warning': 
-            return `${base} bg-white border-2 border-amber-400 shadow-md hover:border-amber-500`;
-          case 'critical-gap': 
-            return `${base} bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-lg shadow-rose-500/50`;
-          default: 
-            return `${base} bg-white border-2 border-slate-300 shadow-md`;
-        }
-      };
+      <div class="details" id="details">
+        <div class="node-title">Welcome</div>
+        <div class="node-text">Click any node on the diagram to see the step details, checklist items, and links to runbook templates. Use the Export PNG button to snapshot the chart for documentation or presentations.</div>
+        <div class="legend">Legend: Blue = Account / Setup, Green = Data & Mapping, Orange = Ops & Monitoring, Purple = Automation / Tools</div>
+      </div>
 
-      const FlowNode = ({ id, title, status, x, y, width = 240 }) => (
-        <div 
-          className={`absolute ${getNodeStyle(status)} rounded-xl p-4`}
-          style={{ left: x, top: y, width }}
-          onClick={() => setSelectedNode(id)}
-        >
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5">{getStatusIcon(status)}</div>
-            <div className="flex-1">
-              <h3 className={`font-semibold text-sm leading-tight ${status === 'trigger' || status === 'critical-gap' ? 'text-white' : 'text-slate-800'}`}>
-                {title}
-              </h3>
-            </div>
-          </div>
-        </div>
-      );
+      <div style="display:flex;gap:8px;justify-content:space-between">
+        <a id="downloadHtml" class="link" href="#">Download HTML</a>
+        <a class="link" href="https://github.com/">Open in GitHub</a>
+      </div>
+    </div>
+  </div>
 
-      const VerticalLine = ({ x, y1, y2, color = "slate", dashed = false }) => {
-        const colorMap = {
-          slate: '#cbd5e1',
-          blue: '#60a5fa',
-          amber: '#fbbf24',
-          rose: '#f43f5e'
-        };
-        
-        return (
-          <div 
-            className="absolute"
-            style={{ 
-              left: x - 1, 
-              top: y1, 
-              width: 2, 
-              height: y2 - y1,
-              backgroundColor: dashed ? 'transparent' : colorMap[color],
-              backgroundImage: dashed ? `repeating-linear-gradient(to bottom, ${colorMap[color]} 0, ${colorMap[color]} 4px, transparent 4px, transparent 8px)` : 'none'
-            }}
-          />
-        );
-      };
+  <footer>Generated interactive onboarding flow — copy this file to GitHub Pages (single-file HTML)</footer>
 
-      const HorizontalLine = ({ x1, x2, y, color = "slate", dashed = false }) => {
-        const colorMap = {
-          slate: '#cbd5e1',
-          blue: '#60a5fa',
-          amber: '#fbbf24',
-          rose: '#f43f5e'
-        };
-        
-        return (
-          <div 
-            className="absolute"
-            style={{ 
-              left: x1, 
-              top: y - 1, 
-              width: x2 - x1, 
-              height: 2,
-              backgroundColor: dashed ? 'transparent' : colorMap[color],
-              backgroundImage: dashed ? `repeating-linear-gradient(to right, ${colorMap[color]} 0, ${colorMap[color]} 4px, transparent 4px, transparent 8px)` : 'none'
-            }}
-          />
-        );
-      };
-
-      const Arrow = ({ x, y, direction = "down", color = "slate" }) => {
-        const colorMap = {
-          slate: '#94a3b8',
-          blue: '#60a5fa',
-          amber: '#fbbf24',
-          rose: '#f43f5e'
-        };
-        
-        return (
-          <div 
-            className="absolute w-0 h-0"
-            style={{
-              left: direction === "down" ? x - 4 : x,
-              top: y,
-              borderLeft: direction === "down" ? '4px solid transparent' : '0',
-              borderRight: direction === "down" ? '4px solid transparent' : '0',
-              borderTop: direction === "down" ? `8px solid ${colorMap[color]}` : '0'
-            }}
-          />
-        );
-      };
-
-      const centerX = 450;
-      const leftX = 120;
-      const rightX = 780;
-
-      return (
-        <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-          {/* Modern Header */}
-          <div className="sticky top-0 bg-white/80 backdrop-blur-lg border-b border-slate-200 shadow-sm z-50">
-            <div className="max-w-7xl mx-auto px-6 py-5">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                    EROAD → Welfare First
-                  </h1>
-                  <p className="text-slate-600 text-sm mt-1">Customer Onboarding Process Flow</p>
-                </div>
-                <button
-                  onClick={() => setShowIdealState(!showIdealState)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg"
-                >
-                  {showIdealState ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  <span className="font-medium">{showIdealState ? 'Current State' : 'Show Ideal State'}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Minimalist Legend */}
-          <div className="max-w-7xl mx-auto px-6 mt-6">
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-              <div className="flex flex-wrap items-center gap-6 text-sm">
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-blue-600" />
-                  <span className="text-slate-700 font-medium">Trigger</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  <span className="text-slate-700 font-medium">Active</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-500" />
-                  <span className="text-slate-700 font-medium">Warning</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <XCircle className="w-4 h-4 text-rose-500" />
-                  <span className="text-slate-700 font-medium">Critical Gap</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Flow Canvas */}
-          <div className="max-w-7xl mx-auto px-6 py-8">
-            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-12 relative overflow-hidden" style={{ minHeight: '1600px' }}>
-              
-              {/* Background Grid */}
-              <div className="absolute inset-0 opacity-30 pointer-events-none" style={{
-                backgroundImage: 'radial-gradient(circle, #e2e8f0 1px, transparent 1px)',
-                backgroundSize: '30px 30px'
-              }} />
-
-              {/* Flow Nodes */}
-              <FlowNode id="signup" title="New Customer Signs Up" status="trigger" x={centerX - 120} y={20} />
-              
-              {/* Vertical line from trigger */}
-              <VerticalLine x={centerX} y1={80} y2={120} color="blue" />
-              <Arrow x={centerX} y={120} color="blue" />
-              
-              <FlowNode id="parallel" title="EROAD Sales Ops - Parallel Actions" status="current" x={centerX - 120} y={130} />
-              
-              {/* Three parallel branches */}
-              <VerticalLine x={centerX} y1={190} y2={220} />
-              <HorizontalLine x1={leftX + 120} x2={rightX + 120} y={220} />
-              <VerticalLine x={leftX + 120} y1={220} y2={260} />
-              <VerticalLine x={centerX} y1={220} y2={260} />
-              <VerticalLine x={rightX + 120} y1={220} y2={260} />
-              <Arrow x={leftX + 120} y={260} />
-              <Arrow x={centerX} y={260} />
-              <Arrow x={rightX + 120} y={260} />
-              
-              <FlowNode id="myeroad" title="MyEROAD Portal Access" status="current" x={leftX} y={270} />
-              <FlowNode id="apiVault" title="API Key Retrieval" status="current" x={centerX - 120} y={270} />
-              <FlowNode id="customerForm" title="Customer Onboarding Form" status="current" x={rightX} y={270} />
-              
-              {/* Convergence lines */}
-              <VerticalLine x={leftX + 120} y1={350} y2={380} dashed={true} color="amber" />
-              <VerticalLine x={centerX} y1={350} y2={420} />
-              <VerticalLine x={rightX + 120} y1={350} y2={380} dashed={true} color="amber" />
-              <HorizontalLine x1={leftX + 120} x2={rightX + 120} y={380} dashed={true} color="amber" />
-              <VerticalLine x={centerX} y1={380} y2={420} dashed={true} color="amber" />
-              <Arrow x={centerX} y={420} color="amber" />
-              
-              <FlowNode id="apiIntegration" title="API Integration & Verification" status="current" x={centerX - 120} y={430} />
-              
-              <VerticalLine x={centerX} y1={510} y2={550} />
-              <Arrow x={centerX} y={550} />
-              
-              <FlowNode id="wfSetup" title="Welfare First Setup (Excel Tracking)" status="warning" x={centerX - 120} y={560} />
-              
-              <VerticalLine x={centerX} y1={640} y2={680} color="amber" />
-              <Arrow x={centerX} y={680} color="amber" />
-              
-              <FlowNode id="wfLiveEmail" title="WF Notifies 'Live' to Sales Ops" status="warning" x={centerX - 120} y={690} />
-              
-              <VerticalLine x={centerX} y1={770} y2={810} color="rose" dashed={true} />
-              <Arrow x={centerX} y={810} color="rose" />
-              
-              <FlowNode id="monitoringActivation" title="🚨 Monitoring Activation (Customer)" status="critical-gap" x={centerX - 120} y={820} width={280} />
-              
-              <VerticalLine x={centerX} y1={900} y2={940} color="rose" dashed={true} />
-              <Arrow x={centerX} y={940} color="rose" />
-              
-              <FlowNode id="monitoring" title="Active Monitoring" status="current" x={centerX - 120} y={950} />
-              
-              <VerticalLine x={centerX} y1={1030} y2={1070} />
-              <Arrow x={centerX} y={1070} />
-              
-              <FlowNode id="offboardRequest" title="Offboarding Request" status="current" x={centerX - 120} y={1080} />
-              
-              <VerticalLine x={centerX} y1={1160} y2={1200} color="rose" />
-              <Arrow x={centerX} y={1200} color="rose" />
-              
-              <FlowNode id="wfOffboard" title="Welfare First Offboards" status="critical-gap" x={centerX - 120} y={1210} />
-              
-              <VerticalLine x={centerX} y1={1290} y2={1320} color="rose" />
-              <HorizontalLine x1={centerX} x2={rightX + 60} y={1320} color="rose" />
-              <VerticalLine x={rightX + 60} y1={1320} y2={1360} color="rose" />
-              <Arrow x={rightX + 60} y={1360} color="rose" />
-              
-              <FlowNode id="billingMisalignment" title="🚨 Billing Misalignment" status="critical-gap" x={rightX - 60} y={1370} width={280} />
-
-            </div>
-          </div>
-
-          {/* Ideal State Overlay */}
-          {showIdealState && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center p-8">
-              <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 flex justify-between items-center rounded-t-2xl">
-                  <div>
-                    <h2 className="font-bold text-2xl">🎯 Ideal State Vision</h2>
-                    <p className="text-blue-100 text-sm mt-1">Fully automated, connected workflow</p>
-                  </div>
-                  <button 
-                    onClick={() => setShowIdealState(false)} 
-                    className="text-white/80 hover:text-white text-3xl leading-none"
-                  >
-                    ×
-                  </button>
-                </div>
-                
-                <div className="p-8 space-y-6">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
-                    <h3 className="font-bold text-blue-900 text-lg mb-4">🚀 Automated Workflow Vision</h3>
-                    <p className="text-blue-800 leading-relaxed">
-                      A fully integrated system that tracks progress from account creation to monitoring activation, 
-                      with real-time status updates, automated notifications, and complete billing alignment.
-                    </p>
-                  </div>
-
-                  <div className="grid gap-4">
-                    <div className="bg-white border-2 border-emerald-200 rounded-xl p-5">
-                      <h4 className="font-semibold text-emerald-900 mb-3 flex items-center gap-2">
-                        <CheckCircle className="w-5 h-5" />
-                        1. Automated Account Provisioning
-                      </h4>
-                      <ul className="text-sm text-slate-700 space-y-2 ml-7">
-                        <li>• MyEROAD account auto-created with first login confirmation webhook</li>
-                        <li>• API keys auto-generated with extended validity and rotation alerts</li>
-                        <li>• Onboarding form with mandatory field validation before submission</li>
-                      </ul>
-                    </div>
-
-                    <div className="bg-white border-2 border-blue-200 rounded-xl p-5">
-                      <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-                        <Zap className="w-5 h-5" />
-                        2. Real-Time Integration Status Dashboard
-                      </h4>
-                      <ul className="text-sm text-slate-700 space-y-2 ml-7">
-                        <li>• Live status tracking: MyEROAD access, API integration, form submission</li>
-                        <li>• Completion percentage visible to both WF and EROAD</li>
-                        <li>• Automated alerts for incomplete steps or errors</li>
-                        <li>• Replace Excel with centralized onboarding management tool</li>
-                      </ul>
-                    </div>
-
-                    <div className="bg-white border-2 border-amber-200 rounded-xl p-5">
-                      <h4 className="font-semibold text-amber-900 mb-3 flex items-center gap-2">
-                        <AlertCircle className="w-5 h-5" />
-                        3. Monitoring Activation Visibility (CRITICAL)
-                      </h4>
-                      <ul className="text-sm text-slate-700 space-y-2 ml-7">
-                        <li>• <strong>Webhook notification</strong> when customer toggles monitoring ON/OFF</li>
-                        <li>• Payload includes: timestamp, vehicle list, monitoring status</li>
-                        <li>• Visible in WF dashboard with exact activation date/time</li>
-                        <li>• Automated billing alignment with EROAD systems</li>
-                      </ul>
-                    </div>
-
-                    <div className="bg-white border-2 border-rose-200 rounded-xl p-5">
-                      <h4 className="font-semibold text-rose-900 mb-3 flex items-center gap-2">
-                        <XCircle className="w-5 h-5" />
-                        4. Offboarding Synchronization (CRITICAL)
-                      </h4>
-                      <ul className="text-sm text-slate-700 space-y-2 ml-7">
-                        <li>• WF offboarding triggers automatic notification to EROAD</li>
-                        <li>• EROAD billing system updated with exact offboard timestamp</li>
-                        <li>• Customer Change Manager Portal integration (when ready)</li>
-                        <li>• Prorata billing automatically calculated and aligned</li>
-                      </ul>
-                    </div>
-
-                    <div className="bg-white border-2 border-indigo-200 rounded-xl p-5">
-                      <h4 className="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
-                        <Info className="w-5 h-5" />
-                        5. Complete Communication Loop
-                      </h4>
-                      <ul className="text-sm text-slate-700 space-y-2 ml-7">
-                        <li>• All customer notifications CC Welfare First</li>
-                        <li>• Automated confirmation when customer receives monitoring instructions</li>
-                        <li>• Shared view of customer journey between EROAD and WF</li>
-                        <li>• Clear audit trail for compliance and billing disputes</li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-6 border-2 border-emerald-300">
-                    <h3 className="font-bold text-emerald-900 text-lg mb-3">✅ Expected Outcomes</h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <div className="font-semibold text-emerald-800 mb-2">Operational Benefits</div>
-                        <ul className="text-slate-700 space-y-1">
-                          <li>• Zero billing misalignment</li>
-                          <li>• Reduced manual reconciliation</li>
-                          <li>• Real-time visibility for both parties</li>
-                          <li>• Faster onboarding cycles</li>
-                        </ul>
-                      </div>
-                      <div>
-                        <div className="font-semibold text-emerald-800 mb-2">Business Impact</div>
-                        <ul className="text-slate-700 space-y-1">
-                          <li>• Improved customer satisfaction</li>
-                          <li>• Reduced support overhead</li>
-                          <li>• Accurate financial reporting</li>
-                          <li>• Complete audit trail</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Side Detail Panel */}
-          {selectedNode && (
-            <div className="fixed right-0 top-0 h-full w-[420px] bg-white shadow-2xl z-50 border-l border-slate-200 overflow-y-auto">
-              <div className="sticky top-0 bg-gradient-to-r from-slate-800 to-slate-700 text-white p-6 flex justify-between items-center">
-                <h2 className="font-bold text-lg">Process Details</h2>
-                <button 
-                  onClick={() => setSelectedNode(null)} 
-                  className="text-white/80 hover:text-white text-2xl leading-none"
-                >
-                  ×
-                </button>
-              </div>
-              
-              <div className="p-6 space-y-6">
-                <div className="flex items-center gap-3">
-                  {getStatusIcon(nodeDetails[selectedNode].status)}
-                  <h3 className="font-bold text-xl text-slate-800">{nodeDetails[selectedNode].title}</h3>
-                </div>
-
-                <div className="text-slate-700 leading-relaxed">
-                  {nodeDetails[selectedNode].details}
-                </div>
-
-                {nodeDetails[selectedNode].subSteps && (
-                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
-                    <h4 className="font-semibold text-slate-800 mb-3">Process Steps</h4>
-                    <div className="space-y-2">
-                      {nodeDetails[selectedNode].subSteps.map((step, i) => (
-                        <div key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                          <ChevronRight className="w-4 h-4 mt-0.5 text-slate-400 flex-shrink-0" />
-                          <span>{step}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {nodeDetails[selectedNode].excelStatuses && (
-                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                    <h4 className="font-semibold text-blue-900 mb-3">Excel Tracking Fields</h4>
-                    <div className="space-y-1.5">
-                      {nodeDetails[selectedNode].excelStatuses.map((status, i) => (
-                        <div key={i} className="text-sm text-blue-800">• {status}</div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {nodeDetails[selectedNode].failures && (
-                  <div className="bg-rose-50 rounded-lg p-4 border border-rose-200">
-                    <h4 className="font-semibold text-rose-900 mb-3">Failure Scenarios</h4>
-                    <div className="space-y-2">
-                      {nodeDetails[selectedNode].failures.map((failure, i) => (
-                        <div key={i} className="text-sm text-rose-800">⚠️ {failure}</div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {nodeDetails[selectedNode].blocking && (
-                  <div className="bg-rose-100 rounded-lg p-4 border-2 border-rose-400">
-                    <h4 className="font-semibold text-rose-900 mb-2">⛔ Blocking Issues</h4>
-                    <p className="text-sm text-rose-800">{nodeDetails[selectedNode].blocking}</p>
-                  </div>
-                )}
-
-                {nodeDetails[selectedNode].dependencies.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-slate-800 mb-2">Dependencies</h4>
-                    <div className="space-y-1.5">
-                      {nodeDetails[selectedNode].dependencies.map((dep, i) => (
-                        <div key={i} className="text-sm text-slate-600 flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                          {dep}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="border-t border-slate-200 pt-6 space-y-4">
-                  <div>
-                    <h4 className="font-semibold text-emerald-700 mb-2 flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Current State
-                    </h4>
-                    <p className="text-sm text-slate-700 leading-relaxed">{nodeDetails[selectedNode].currentState}</p>
-                  </div>
-                  
-                  <div className={nodeDetails[selectedNode].idealState.includes('🎯') ? 'bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200' : ''}>
-                    <h4 className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
-                      <Zap className="w-4 h-4" />
-                      Ideal State
-                    </h4>
-                    <p className="text-sm text-slate-700 leading-relaxed">{nodeDetails[selectedNode].idealState}</p>
-                  </div>
-                </div>
-
-                {nodeDetails[selectedNode].gap && (
-                  <div className="bg-amber-50 border-l-4 border-amber-500 rounded-r-lg p-4">
-                    <h4 className="font-semibold text-amber-900 mb-2">⚠️ Identified Gap</h4>
-                    <p className="text-sm text-amber-800 leading-relaxed">{nodeDetails[selectedNode].gap}</p>
-                  </div>
-                )}
-
-                {nodeDetails[selectedNode].impact && (
-                  <div className="bg-rose-50 border-l-4 border-rose-500 rounded-r-lg p-4">
-                    <h4 className="font-semibold text-rose-900 mb-2">📊 Business Impact</h4>
-                    <p className="text-sm text-rose-800 leading-relaxed">{nodeDetails[selectedNode].impact}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Modern Summary Cards */}
-          <div className="max-w-7xl mx-auto px-6 pb-8">
-            <div className="grid grid-cols-3 gap-6">
-              <div className="bg-gradient-to-br from-rose-50 to-rose-100 border-2 border-rose-300 rounded-xl p-6 shadow-lg">
-                <h3 className="font-bold text-rose-900 mb-4 flex items-center gap-2 text-lg">
-                  <XCircle className="w-5 h-5" />
-                  Critical Gaps (2)
-                </h3>
-                <div className="space-y-3 text-sm text-rose-800">
-                  <div className="bg-white/60 rounded-lg p-3">
-                    <strong>Monitoring Activation:</strong> Zero visibility when customer toggles ON/OFF
-                  </div>
-                  <div className="bg-white/60 rounded-lg p-3">
-                    <strong>Offboarding Sync:</strong> EROAD continues billing after WF offboards
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl p-6 shadow-lg">
-                <h3 className="font-bold text-amber-900 mb-4 flex items-center gap-2 text-lg">
-                  <AlertCircle className="w-5 h-5" />
-                  Process Gaps (4)
-                </h3>
-                <div className="space-y-2 text-sm text-amber-800">
-                  <div>• No MyEROAD access confirmation</div>
-                  <div>• No automated form validation</div>
-                  <div>• Manual Excel tracking</div>
-                  <div>• Lost visibility after "Live" notification</div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-300 rounded-xl p-6 shadow-lg">
-                <h3 className="font-bold text-emerald-900 mb-4 flex items-center gap-2 text-lg">
-                  <CheckCircle className="w-5 h-5" />
-                  Works Well (3)
-                </h3>
-                <div className="space-y-2 text-sm text-emerald-800">
-                  <div>• Parallel automated emails from Sales Ops</div>
-                  <div>• Instant API verification (vehicles appear)</div>
-                  <div>• Clear failure feedback for API errors</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Key Recommendations Card */}
-            <div className="mt-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-8 shadow-xl">
-              <h3 className="font-bold text-blue-900 mb-6 text-2xl flex items-center gap-3">
-                <Zap className="w-6 h-6" />
-                Key Recommendations for EROAD Meeting
-              </h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="bg-white/70 rounded-lg p-5 border border-blue-200">
-                  <h4 className="font-semibold text-blue-900 mb-3 text-base">Priority 1: Monitoring Visibility</h4>
-                  <ul className="text-sm text-blue-800 space-y-2 leading-relaxed">
-                    <li>• Request webhook/API when customer toggles monitoring ON/OFF</li>
-                    <li>• Include timestamp + vehicle list in notification</li>
-                    <li>• Enables accurate billing alignment</li>
-                  </ul>
-                </div>
-                <div className="bg-white/70 rounded-lg p-5 border border-blue-200">
-                  <h4 className="font-semibold text-blue-900 mb-3 text-base">Priority 2: Offboarding Sync</h4>
-                  <ul className="text-sm text-blue-800 space-y-2 leading-relaxed">
-                    <li>• Automate notification from WF → EROAD on offboarding</li>
-                    <li>• Or define process for WF to notify via EROAD portal</li>
-                    <li>• Ensure billing stops on same date</li>
-                  </ul>
-                </div>
-                <div className="bg-white/70 rounded-lg p-5 border border-blue-200">
-                  <h4 className="font-semibold text-blue-900 mb-3 text-base">Priority 3: Communication Loop</h4>
-                  <ul className="text-sm text-blue-800 space-y-2 leading-relaxed">
-                    <li>• CC Welfare First when notifying customer</li>
-                    <li>• Close communication gap after "WF Live" email</li>
-                    <li>• Confirm customer received monitoring instructions</li>
-                  </ul>
-                </div>
-                <div className="bg-white/70 rounded-lg p-5 border border-blue-200">
-                  <h4 className="font-semibold text-blue-900 mb-3 text-base">Nice-to-Have: Automation</h4>
-                  <ul className="text-sm text-blue-800 space-y-2 leading-relaxed">
-                    <li>• Auto-confirmation of MyEROAD first login</li>
-                    <li>• Extended vault link validity alerts</li>
-                    <li>• Onboarding form validation</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
+  <script>
+    // Define nodes and detailed content (based on Sai Kanapur transcript)
+    const NODE_DETAILS = {
+      'pre_onboarding':{
+        title:'Pre-onboarding (Cognito form)',
+        body:`EROAD sends the Cognito onboarding form. The form should include vehicle regos, locations, escalation contacts, and other onboarding data. Use this as canonical input for bulk uploads.`
+      },
+      'sales_actions':{
+        title:'Sales actions',
+        body:`Sales creates MyEROAD account (username + temp password) and generates the partner API key through the secure vault link. Save credentials in a secure vault; if the vault link expires, request resend.`
+      },
+      'enterprise_creation':{
+        title:'Enterprise creation',
+        body:`Create a new Welfare First enterprise for each customer (one enterprise per customer). Use Gethome-safe signup or request. Ensure Welfare First branding and central account settings are configured.`
+      },
+      'add_integration':{
+        title:'Add API key & Integration',
+        body:`Account → Configure → Integrations → add partner EROAD API key; enable driver sync. Validate API key length; if malformed, ask EROAD to regenerate.`
+      },
+      'fleet_mapping':{
+        title:'Fleet mapping & groups',
+        body:`Ask customer to create a 'Welfare First' group in MyEROAD or select correct groups. If vehicles missing, verify API key and group selection.`
+      },
+      'organizations':{
+        title:'Create Organizations',
+        body:`Create orgs under the enterprise, set primary contact, URL segment, and timezone. For multi-region customers, create multiple orgs to reflect timezone/escalation differences.`
+      },
+      'call_center_setup':{
+        title:'Call center setup',
+        body:`Get Gethome-safe to add the enterprise to the call center dashboard. Enable the org call center toggle once teams/users are configured. Don't enable early to avoid spurious alerts.`
+      },
+      'alert_settings':{
+        title:'Alert notification settings',
+        body:`Alert follow-up emails are disabled by default to avoid customer confusion; enable only on request. Escalation contacts are editable per org/team.`
+      },
+      'teams_users':{
+        title:'Teams & Users',
+        body:`Create teams first. Bulk-upload users (≤100 per batch) using onboarding data; use dummy emails + CC Sai to avoid spamming customers with verification emails. Assign users to teams and mark team leaders.`
+      },
+      'vehicle_mapping':{
+        title:'Vehicle → User mapping',
+        body:`Map vehicles to users at the account level (vehicle detail → assign user). This is critical — unmapped vehicles won't show alerts on the dashboard.`
+      },
+      'monitoring_ops':{
+        title:'Monitoring & Operator workflow',
+        body:`Operators view the call center dashboard, open events, click Start Follow Up, follow SOP steps and mark Done for each step. For collision/rollover/panic, read the event label first (no footage). Save activity PDFs and upload to the portal.`
+      },
+      'after_alerts':{
+        title:'After-alert handling',
+        body:`When actioned, save activity page as PDF, upload to portal, change status to 'reviewed'. Attach SOP or coaching documents as needed.`
+      },
+      'timezones':{
+        title:'Timezones & edge cases',
+        body:`Ensure org and vehicle timezones are set correctly to prevent miscommunication. Multi-timezone fleets may need per-vehicle timezone assignment.`
+      },
+      'credentials':{
+        title:'Credentials & secrets',
+        body:`Move credentials from Teams doc to a password vault (LastPass). Use standardized temporary admin emails (e.g., Sai.+customer@firstsecurity.co.nz) when creating accounts.`
+      },
+      'automation':{
+        title:'Automation opportunities',
+        body:`Implement a UI bot to auto-confirm verification emails for large bulk uploads. Consider a browser extension for quick portal switching (InfoSec approval required).`
+      }
     };
 
-    ReactDOM.render(<OnboardingFlowchart />, document.getElementById('root'));
+    // cytoscape nodes & edges
+    const elements = [
+      { data: { id: 'pre_onboarding', label: 'Pre-onboarding' } },
+      { data: { id: 'sales_actions', label: 'Sales actions' } },
+      { data: { id: 'enterprise_creation', label: 'Enterprise
+creation' } },
+      { data: { id: 'add_integration', label: 'Add API Key
+& Integration' } },
+      { data: { id: 'fleet_mapping', label: 'Fleet Mapping
+& Groups' } },
+      { data: { id: 'organizations', label: 'Organizations' } },
+      { data: { id: 'call_center_setup', label: 'Call Center
+Setup' } },
+      { data: { id: 'alert_settings', label: 'Alert
+Settings' } },
+      { data: { id: 'teams_users', label: 'Teams &
+Users' } },
+      { data: { id: 'vehicle_mapping', label: 'Vehicle →
+User Mapping' } },
+      { data: { id: 'monitoring_ops', label: 'Monitoring &
+Operator Flow' } },
+      { data: { id: 'after_alerts', label: 'After-Alert
+Handling' } },
+      { data: { id: 'timezones', label: 'Timezones' } },
+      { data: { id: 'credentials', label: 'Credentials
+& Secrets' } },
+      { data: { id: 'automation', label: 'Automation
+Opportunities' } },
+
+      // edges
+      { data: { source: 'pre_onboarding', target: 'sales_actions' } },
+      { data: { source: 'sales_actions', target: 'enterprise_creation' } },
+      { data: { source: 'enterprise_creation', target: 'add_integration' } },
+      { data: { source: 'add_integration', target: 'fleet_mapping' } },
+      { data: { source: 'fleet_mapping', target: 'organizations' } },
+      { data: { source: 'organizations', target: 'teams_users' } },
+      { data: { source: 'teams_users', target: 'vehicle_mapping' } },
+      { data: { source: 'vehicle_mapping', target: 'monitoring_ops' } },
+      { data: { source: 'monitoring_ops', target: 'after_alerts' } },
+      { data: { source: 'organizations', target: 'call_center_setup' } },
+      { data: { source: 'call_center_setup', target: 'monitoring_ops' } },
+      { data: { source: 'add_integration', target: 'credentials' } },
+      { data: { source: 'teams_users', target: 'automation' } },
+      { data: { source: 'organizations', target: 'timezones' } }
+    ];
+
+    // init cytoscape
+    const cy = cytoscape({
+      container: document.getElementById('cy'),
+      elements,
+      style: [
+        { selector: 'node', style: { 'label': 'data(label)', 'text-wrap':'wrap','text-valign':'center','text-halign':'center','background-color':'#0ea5a9','color':'#022627','width':'label','height':'label','padding':'14px','font-size':'12px','shape':'roundrectangle','text-margin-y':0 } },
+        { selector: 'edge', style: { 'curve-style':'bezier','target-arrow-shape':'triangle','line-color':'rgba(255,255,255,0.08)','target-arrow-color':'rgba(255,255,255,0.08)','width':2 } },
+        { selector: ':selected', style: { 'border-width':3,'border-color':'#ffd166' } }
+      ],
+      layout: { name: 'dagre', rankDir: 'LR', nodeSep: 40, rankSep: 80 }
+    });
+
+    // click handler to show details
+    cy.on('tap', 'node', function(evt){
+      const id = evt.target.id();
+      const info = NODE_DETAILS[id];
+      const detailsEl = document.getElementById('details');
+      detailsEl.innerHTML = `<div class=\"node-title\">${info.title}</div><div class=\"node-text\">${info.body.replace(/\n/g,'<br/>')}</div>`;
+
+      // zoom into node
+      cy.animate({ center: { eles: evt.target }, zoom: { level: 1.4 }, duration: 300 });
+    });
+
+    // controls
+    document.getElementById('fitBtn').addEventListener('click',()=>cy.fit());
+    document.getElementById('zoomIn').addEventListener('click',()=>cy.zoom(cy.zoom()+0.2));
+    document.getElementById('zoomOut').addEventListener('click',()=>cy.zoom(cy.zoom()-0.2));
+
+    // export PNG
+    document.getElementById('exportPng').addEventListener('click',()=>{
+      const png64 = cy.png({full:true,scale:2});
+      const a = document.createElement('a'); a.href = png64; a.download = 'welfare-first-onboarding.png'; a.click();
+    });
+
+    // search
+    document.getElementById('searchBtn').addEventListener('click',()=>{
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      if(!q) return; const found = cy.nodes().filter(n=>n.data('label').toLowerCase().includes(q));
+      if(found.length>0){ cy.elements().unselect(); found.select(); cy.animate({center:{eles:found},zoom:1.2,duration:300}); found.flash = setTimeout(()=>found.unselect(),1500); }
+      else alert('No node found for: '+q);
+    });
+
+    // download this HTML file
+    document.getElementById('downloadHtml').addEventListener('click',function(e){
+      e.preventDefault();
+      const html = `<!doctype html>\n${document.documentElement.outerHTML}`;
+      const blob = new Blob([html],{type:'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'welfare-first-interactive-onboarding.html'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    // initial fit
+    cy.ready(()=>cy.fit());
   </script>
 </body>
 </html>
