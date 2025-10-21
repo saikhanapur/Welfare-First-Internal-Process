@@ -69,68 +69,68 @@
         const { useState, useEffect, useRef } = React;
 
         const NODES = [
-            { id: 'cognitoForm', title: 'Cognito Onboarding Form', category: 'Account/Setup', x: 50, y: 50, owner: 'EROAD Sales', severity: 'MEDIUM', manual: true,
+            { id: 'cognitoForm', title: 'Cognito Onboarding Form', category: 'Account/Setup', x: 50, y: 120, owner: 'EROAD Sales', severity: 'MEDIUM', manual: true,
               context: 'EROAD sends customer a Cognito form to collect vehicle registrations, locations, and escalation contacts',
               inputs: ['Customer details', 'Vehicle regos', 'Locations'], downstream: ['MyEROAD account', 'User uploads'],
               gaps: ['No timezone field', 'No WF group'], workarounds: ['Manual follow-up'], ideal: ['Make timezone required'] },
-            { id: 'myeroadAccount', title: 'MyEROAD Account', category: 'Account/Setup', x: 50, y: 200, owner: 'EROAD Sales', severity: 'MEDIUM', manual: true,
+            { id: 'myeroadAccount', title: 'MyEROAD Account', category: 'Account/Setup', x: 50, y: 270, owner: 'EROAD Sales', severity: 'MEDIUM', manual: true,
               context: 'Sales creates MyEROAD account and sends credentials', inputs: ['Cognito data'], downstream: ['API key'],
               gaps: ['No standardized handoff', 'Email security risk'], workarounds: ['Manual email'], ideal: ['Automated provisioning'] },
-            { id: 'apiKeyGeneration', title: 'API Key Generation', category: 'Account/Setup', x: 50, y: 350, owner: 'EROAD Sales Ops', severity: 'MEDIUM', manual: true,
+            { id: 'apiKeyGeneration', title: 'API Key Generation', category: 'Account/Setup', x: 50, y: 420, owner: 'EROAD Sales Ops', severity: 'MEDIUM', manual: true,
               context: 'Generate partner API key via secure vault (24h expiry)', inputs: ['MyEROAD account'], downstream: ['API integration'],
               gaps: ['24h expiry', 'Key type confusion'], workarounds: ['Request resend'], ideal: ['Extended validity'] },
-            { id: 'enterpriseCreation', title: 'WF Enterprise Creation', category: 'Account/Setup', x: 350, y: 50, owner: 'WF Admin (Sai)', severity: 'MEDIUM', manual: true,
+            { id: 'enterpriseCreation', title: 'WF Enterprise Creation', category: 'Account/Setup', x: 350, y: 120, owner: 'WF Admin (Sai)', severity: 'MEDIUM', manual: true,
               context: 'Create WF enterprise (one per customer, ties to API key)', inputs: ['Customer name', 'API key'], downstream: ['Organizations'],
               gaps: ['Manual Gethome-safe steps'], workarounds: ['Manual coordination'], ideal: ['Self-service creation'] },
-            { id: 'apiKeyIntegration', title: 'API Key Integration', category: 'Data & Integration', x: 350, y: 350, owner: 'WF Admin (Sai)', severity: 'LOW', manual: true,
+            { id: 'apiKeyIntegration', title: 'API Key Integration', category: 'Data & Integration', x: 350, y: 420, owner: 'WF Admin (Sai)', severity: 'LOW', manual: true,
               context: 'Add API key in WF, enable driver sync, validate', inputs: ['Partner API key'], downstream: ['Group selection'],
               gaps: ['Malformed keys', 'No validation'], workarounds: ['Regenerate'], ideal: ['Auto validation'] },
-            { id: 'groupSelection', title: 'Fleet Group Selection', category: 'Data & Integration', x: 650, y: 350, owner: 'WF Onboarding (Sai)', severity: 'MEDIUM', manual: true,
+            { id: 'groupSelection', title: 'Fleet Group Selection', category: 'Data & Integration', x: 650, y: 420, owner: 'WF Onboarding (Sai)', severity: 'MEDIUM', manual: true,
               context: 'Select correct groups - wrong group = missing vehicles', inputs: ['API connection', 'Groups'], downstream: ['Vehicle mapping'],
               gaps: ['Wrong group = missing vehicles'], workarounds: ['Manual verification'], ideal: ['Preflight % check'] },
-            { id: 'orgCreation', title: 'Organization Creation', category: 'Account/Setup', x: 650, y: 50, owner: 'WF Admin', severity: 'MEDIUM', manual: true,
+            { id: 'orgCreation', title: 'Organization Creation', category: 'Account/Setup', x: 650, y: 120, owner: 'WF Admin', severity: 'MEDIUM', manual: true,
               context: 'Create orgs with contact, URL, timezone', inputs: ['Enterprise', 'Cognito data'], downstream: ['Teams'],
               gaps: ['Timezone mismatches'], workarounds: ['Manual entry'], ideal: ['Auto-suggest from Cognito'] },
-            { id: 'teamCreation', title: 'Team Creation', category: 'Account/Setup', x: 950, y: 50, owner: 'WF Admin', severity: 'LOW', manual: true,
+            { id: 'teamCreation', title: 'Team Creation', category: 'Account/Setup', x: 950, y: 120, owner: 'WF Admin', severity: 'LOW', manual: true,
               context: 'Create teams for locations/branches', inputs: ['Organization', 'Locations'], downstream: ['Users'],
               gaps: ['Manual process'], workarounds: ['One by one'], ideal: ['Bulk creation'] },
-            { id: 'userBulkUpload', title: 'User Bulk Upload', category: 'Account/Setup', x: 950, y: 200, owner: 'WF Admin', severity: 'HIGH', manual: true,
+            { id: 'userBulkUpload', title: 'User Bulk Upload', category: 'Account/Setup', x: 950, y: 270, owner: 'WF Admin', severity: 'HIGH', manual: true,
               context: 'Bulk upload via CSV (max 100) - email verification bottleneck', inputs: ['Contacts', 'CSV'], downstream: ['Team leaders'],
               gaps: ['Email spam', 'No SSO', '100 limit'], workarounds: ['Dummy emails', 'Tony\'s bot'], ideal: ['SSO provisioning'] },
-            { id: 'teamLeaderAssignment', title: 'Team Leader Assignment', category: 'Account/Setup', x: 950, y: 350, owner: 'WF Admin', severity: 'MEDIUM', manual: true,
+            { id: 'teamLeaderAssignment', title: 'Team Leader Assignment', category: 'Account/Setup', x: 950, y: 420, owner: 'WF Admin', severity: 'MEDIUM', manual: true,
               context: 'Assign leaders via UI - no priority field', inputs: ['Users', 'Teams'], downstream: ['Escalation'],
               gaps: ['No ordering field'], workarounds: ['Name suffixes'], ideal: ['Explicit priority'] },
-            { id: 'vehicleUserMapping', title: 'Vehicle→User Mapping', category: 'Data & Integration', x: 1250, y: 200, owner: 'WF Admin', severity: 'HIGH', manual: true,
+            { id: 'vehicleUserMapping', title: 'Vehicle→User Mapping', category: 'Data & Integration', x: 1250, y: 270, owner: 'WF Admin', severity: 'HIGH', manual: true,
               context: 'CRITICAL: Unmapped vehicles won\'t appear as alerts', inputs: ['Vehicle list', 'Users'], downstream: ['Alerts'],
               gaps: ['Manual per vehicle', 'Error-prone'], workarounds: ['Manual assignment'], ideal: ['Bulk mapping'] },
-            { id: 'callCenterEnable', title: 'Call Center Enable', category: 'Ops/Monitoring', x: 50, y: 550, owner: 'Gethome-safe + WF', severity: 'MEDIUM', manual: true,
+            { id: 'callCenterEnable', title: 'Call Center Enable', category: 'Ops/Monitoring', x: 50, y: 650, owner: 'Gethome-safe + WF', severity: 'MEDIUM', manual: true,
               context: 'Gethome-safe must enable - Sai cannot', inputs: ['Enterprise setup'], downstream: ['Monitoring'],
               gaps: ['Team dependency'], workarounds: ['Manual request'], ideal: ['Auto-enable'] },
-            { id: 'monitoringWorkflow', title: 'Monitoring Workflow', category: 'Ops/Monitoring', x: 350, y: 550, owner: 'Call Center Ops', severity: 'MEDIUM', manual: true,
+            { id: 'monitoringWorkflow', title: 'Monitoring Workflow', category: 'Ops/Monitoring', x: 350, y: 650, owner: 'Call Center Ops', severity: 'MEDIUM', manual: true,
               context: 'Operators follow SOP - many skip marking Done', inputs: ['Alerts', 'SOP'], downstream: ['PDF upload'],
               gaps: ['Skip Done', 'No forced completion'], workarounds: ['Manual checklist'], ideal: ['Embedded SOP'] },
-            { id: 'activityPdfUpload', title: 'Activity PDF Upload', category: 'Ops/Monitoring', x: 650, y: 550, owner: 'Call Center Ops', severity: 'MEDIUM', manual: true,
+            { id: 'activityPdfUpload', title: 'Activity PDF Upload', category: 'Ops/Monitoring', x: 650, y: 650, owner: 'Call Center Ops', severity: 'MEDIUM', manual: true,
               context: 'Save as PDF (Ctrl+P), upload, add notes', inputs: ['Activity details'], downstream: ['Records'],
               gaps: ['Manual PDF save/upload'], workarounds: ['Ctrl+P'], ideal: ['Auto-generate PDF'] },
-            { id: 'monitoringActivation', title: '⚠️ Monitoring Activation', category: 'Ops/Monitoring', x: 950, y: 550, owner: 'EROAD + WF', severity: 'CRITICAL', manual: true,
+            { id: 'monitoringActivation', title: '⚠️ Monitoring Activation', category: 'Ops/Monitoring', x: 950, y: 650, owner: 'EROAD + WF', severity: 'CRITICAL', manual: true,
               context: 'CRITICAL: Customer controls ON/OFF - WF has ZERO visibility', inputs: ['Customer decision'], downstream: ['Billing'],
               gaps: ['NO API/webhook', 'NO timestamp', 'Billing misalignment'], workarounds: ['None - complete gap'], ideal: ['EROAD webhook'] },
-            { id: 'offboardingProcess', title: '⚠️ Offboarding', category: 'Ops/Monitoring', x: 1250, y: 550, owner: 'WF + EROAD', severity: 'CRITICAL', manual: true,
+            { id: 'offboardingProcess', title: '⚠️ Offboarding', category: 'Ops/Monitoring', x: 1250, y: 650, owner: 'WF + EROAD', severity: 'CRITICAL', manual: true,
               context: 'CRITICAL: Manual email - EROAD not notified, continues billing', inputs: ['Offboard request'], downstream: ['Billing'],
               gaps: ['Manual email', 'EROAD not notified', 'Billing disputes'], workarounds: ['Manual emails'], ideal: ['Auto notification'] },
-            { id: 'credentialsManagement', title: 'Credentials Management', category: 'Automation/Tools', x: 50, y: 750, owner: 'WF / InfoSec', severity: 'HIGH', manual: true,
+            { id: 'credentialsManagement', title: 'Credentials Management', category: 'Automation/Tools', x: 50, y: 900, owner: 'WF / InfoSec', severity: 'HIGH', manual: true,
               context: 'Credentials in Teams doc - security risk', inputs: ['Credentials'], downstream: ['Operations'],
               gaps: ['Teams doc', 'Security risk'], workarounds: ['Teams doc'], ideal: ['Secrets manager'] },
-            { id: 'excelTracking', title: 'Excel Tracker', category: 'Automation/Tools', x: 350, y: 750, owner: 'WF Product', severity: 'MEDIUM', manual: true,
+            { id: 'excelTracking', title: 'Excel Tracker', category: 'Automation/Tools', x: 350, y: 900, owner: 'WF Product', severity: 'MEDIUM', manual: true,
               context: 'Manual Excel tracker - no live updates', inputs: ['Onboarding steps'], downstream: ['Progress'],
               gaps: ['Manual', 'Out of sync'], workarounds: ['Manual updates'], ideal: ['Live dashboard'] },
-            { id: 'verificationBot', title: 'Verification Bot', category: 'Automation/Tools', x: 650, y: 750, owner: 'Engineering (Tony)', severity: 'LOW', manual: false,
+            { id: 'verificationBot', title: 'Verification Bot', category: 'Automation/Tools', x: 650, y: 900, owner: 'Engineering (Tony)', severity: 'LOW', manual: false,
               context: 'Tony\'s bot auto-confirms emails', inputs: ['Verification emails'], downstream: ['User activation'],
               gaps: ['Not fully deployed'], workarounds: ['Manual clicks'], ideal: ['Fully automated'] },
-            { id: 'browserExtension', title: 'Browser Extension', category: 'Automation/Tools', x: 950, y: 750, owner: 'Engineering / InfoSec', severity: 'LOW', manual: false,
+            { id: 'browserExtension', title: 'Browser Extension', category: 'Automation/Tools', x: 950, y: 900, owner: 'Engineering / InfoSec', severity: 'LOW', manual: false,
               context: 'Portal switching extension - awaiting approval', inputs: ['Portal URLs'], downstream: ['Faster workflow'],
               gaps: ['Awaiting approval'], workarounds: ['Manual login'], ideal: ['Approved'] },
-            { id: 'preflightChecks', title: 'Preflight Checks', category: 'Automation/Tools', x: 1250, y: 750, owner: 'Engineering', severity: 'LOW', manual: false,
+            { id: 'preflightChecks', title: 'Preflight Checks', category: 'Automation/Tools', x: 1250, y: 900, owner: 'Engineering', severity: 'LOW', manual: false,
               context: 'Automated validation - prevents errors', inputs: ['API key', 'Groups'], downstream: ['Quality'],
               gaps: ['Not implemented'], workarounds: ['Manual testing'], ideal: ['Full validation'] }
         ];
@@ -200,14 +200,17 @@
                         onWheel={(e) => { e.preventDefault(); setZoom(z => Math.min(Math.max(0.3, z + e.deltaY * -0.001), 2)); }}>
                         <svg className="w-full h-full" style={{ background: 'white' }}>
                             <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
-                                <rect x="0" y="0" width="1500" height="250" fill="#eff6ff" opacity="0.3" rx="20" />
-                                <text x="20" y="35" fontSize="24" fontWeight="800" fill="#3b82f6">Account / Setup</text>
-                                <rect x="0" y="280" width="1500" height="250" fill="#f5f3ff" opacity="0.3" rx="20" />
-                                <text x="20" y="315" fontSize="24" fontWeight="800" fill="#8b5cf6">Data & Integration</text>
-                                <rect x="0" y="540" width="1500" height="250" fill="#f0fdf4" opacity="0.3" rx="20" />
-                                <text x="20" y="575" fontSize="24" fontWeight="800" fill="#10b981">Ops / Monitoring</text>
-                                <rect x="0" y="730" width="1500" height="180" fill="#fffbeb" opacity="0.3" rx="20" />
-                                <text x="20" y="765" fontSize="24" fontWeight="800" fill="#f59e0b">Automation / Tools</text>
+                                <rect x="0" y="0" width="1600" height="550" fill="#eff6ff" opacity="0.3" rx="20" />
+                                <text x="30" y="60" fontSize="32" fontWeight="900" fill="#3b82f6">Account / Setup</text>
+                                
+                                <rect x="0" y="570" width="1600" height="300" fill="#f5f3ff" opacity="0.3" rx="20" />
+                                <text x="30" y="630" fontSize="32" fontWeight="900" fill="#8b5cf6">Data & Integration</text>
+                                
+                                <rect x="0" y="890" width="1600" height="300" fill="#f0fdf4" opacity="0.3" rx="20" />
+                                <text x="30" y="950" fontSize="32" fontWeight="900" fill="#10b981">Ops / Monitoring</text>
+                                
+                                <rect x="0" y="1210" width="1600" height="250" fill="#fffbeb" opacity="0.3" rx="20" />
+                                <text x="30" y="1270" fontSize="32" fontWeight="900" fill="#f59e0b">Automation / Tools</text>
 
                                 {EDGES.map((e, i) => {
                                     const from = NODES.find(n => n.id === e.from);
