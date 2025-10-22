@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WF-EROAD Onboarding</title>
+    <title>WF-EROAD Onboarding Journey</title>
     
     <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
@@ -11,101 +11,101 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #ffffff;
-            color: #000000;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #1a202c;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
         }
         
-        .phase-card {
-            background: #ffffff;
-            border: 1px solid #e5e5e5;
-            padding: 40px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             position: relative;
+            overflow: hidden;
         }
         
-        .phase-card:hover {
-            border-color: #000000;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-        }
-        
-        .phase-card.critical {
-            border-color: #000000;
-            border-width: 2px;
-        }
-        
-        .phase-number {
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: #999999;
-            margin-bottom: 16px;
-        }
-        
-        .phase-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #000000;
-            margin-bottom: 8px;
-            line-height: 1.2;
-        }
-        
-        .phase-subtitle {
-            font-size: 15px;
-            font-weight: 400;
-            color: #666666;
-            line-height: 1.5;
-        }
-        
-        .phase-meta {
-            display: flex;
-            gap: 24px;
-            margin-top: 24px;
-            padding-top: 24px;
-            border-top: 1px solid #f0f0f0;
-        }
-        
-        .meta-item {
-            font-size: 13px;
-            color: #999999;
-        }
-        
-        .meta-value {
-            font-weight: 600;
-            color: #000000;
-        }
-        
-        .critical-badge {
+        .glass-card::before {
+            content: '';
             position: absolute;
-            top: 40px;
-            right: 40px;
-            background: #000000;
-            color: #ffffff;
-            padding: 6px 12px;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .glass-card:hover::before {
+            left: 100%;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(31, 38, 135, 0.25);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .phase-1 { border-left: 4px solid #6366f1; }
+        .phase-2 { border-left: 4px solid #8b5cf6; }
+        .phase-3 { border-left: 4px solid #ec4899; }
+        .phase-4 { border-left: 4px solid #f59e0b; }
+        
+        .phase-badge {
+            font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        
+        .badge-1 { background: #eef2ff; color: #6366f1; }
+        .badge-2 { background: #f5f3ff; color: #8b5cf6; }
+        .badge-3 { background: #fdf2f8; color: #ec4899; }
+        .badge-4 { background: #fffbeb; color: #f59e0b; }
+        
+        .critical-alert {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-left: 4px solid #ef4444;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2); }
+            50% { box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4); }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
         
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: fadeIn 0.2s ease;
-            padding: 40px;
+            animation: fadeIn 0.3s ease;
+            padding: 20px;
         }
         
         @keyframes fadeIn {
@@ -114,203 +114,126 @@
         }
         
         .modal-content {
-            background: #ffffff;
-            max-width: 800px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            max-width: 900px;
             width: 100%;
-            max-height: 85vh;
+            max-height: 90vh;
             overflow-y: auto;
-            animation: slideUp 0.3s ease;
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 25px 100px rgba(0, 0, 0, 0.3);
         }
         
         @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from { transform: scale(0.9) translateY(40px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
         }
         
-        .step-item {
-            border-bottom: 1px solid #f0f0f0;
-            padding: 32px 0;
+        .step-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
         }
         
-        .step-item:last-child {
-            border-bottom: none;
+        .step-card:hover {
+            border-color: #6366f1;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+            transform: translateX(4px);
         }
         
-        .step-header {
-            display: flex;
-            align-items: start;
-            gap: 20px;
-            margin-bottom: 16px;
-        }
-        
-        .step-number {
-            width: 32px;
-            height: 32px;
-            background: #000000;
-            color: #ffffff;
-            display: flex;
+        .tag {
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-        
-        .step-title {
-            font-size: 18px;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: 600;
-            color: #000000;
-            flex: 1;
         }
         
-        .badge {
-            padding: 4px 10px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            border: 1px solid #e5e5e5;
-            color: #666666;
-        }
+        .tag-manual { background: #fef3c7; color: #92400e; }
+        .tag-auto { background: #d1fae5; color: #065f46; }
+        .tag-critical { background: #fecaca; color: #991b1b; }
+        .tag-high { background: #fed7aa; color: #9a3412; }
         
-        .badge-critical {
-            background: #000000;
-            color: #ffffff;
-            border-color: #000000;
-        }
-        
-        .badge-high {
-            border-color: #000000;
-            color: #000000;
-        }
-        
-        .step-meta {
-            font-size: 14px;
-            color: #666666;
-            margin-bottom: 16px;
-            padding-left: 52px;
-        }
-        
-        .info-box {
-            padding: 20px;
-            background: #fafafa;
-            border-left: 2px solid #e5e5e5;
-            margin-top: 16px;
-            margin-left: 52px;
-        }
-        
-        .info-box.critical {
-            background: #000000;
-            border-left-color: #000000;
-            color: #ffffff;
-        }
-        
-        .info-box.critical .info-label {
-            color: #999999;
-        }
-        
-        .info-label {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: #999999;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-        
-        .info-content {
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        
-        .info-box.critical .info-content {
-            color: #ffffff;
-        }
-        
-        .info-box:not(.critical) .info-content {
-            color: #666666;
-        }
-        
-        .header {
-            background: #ffffff;
-            border-bottom: 1px solid #e5e5e5;
-            padding: 32px 40px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .btn {
-            background: #000000;
-            color: #ffffff;
-            border: none;
             padding: 12px 24px;
-            font-size: 14px;
+            border-radius: 12px;
             font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            border: none;
             font-family: 'Inter', sans-serif;
         }
         
-        .btn:hover {
-            background: #333333;
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
         }
         
-        .btn-outline {
-            background: transparent;
-            color: #000000;
-            border: 1px solid #e5e5e5;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
         }
         
-        .btn-outline:hover {
-            background: #fafafa;
-            border-color: #000000;
+        .progress-bar {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
         }
         
-        .alert-banner {
-            background: #000000;
-            color: #ffffff;
-            padding: 24px 40px;
-            margin-bottom: 40px;
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+            border-radius: 3px;
+            transition: width 0.5s ease;
         }
         
-        .alert-title {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 4px;
-            letter-spacing: 0.5px;
+        .emoji {
+            font-size: 2.5rem;
+            display: inline-block;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
         }
         
-        .alert-text {
-            font-size: 14px;
-            color: #cccccc;
-        }
-        
-        @media (max-width: 1024px) {
+        @media (max-width: 768px) {
             .phase-grid {
                 grid-template-columns: 1fr !important;
             }
         }
         
-        @media (max-width: 640px) {
-            .header {
-                padding: 24px 20px;
-            }
-            .phase-card {
-                padding: 24px;
-            }
-            .modal-overlay {
-                padding: 20px;
-            }
-            .info-box {
-                margin-left: 0;
-            }
-            .step-meta {
-                padding-left: 0;
-            }
-            .step-header {
-                flex-direction: column;
-                gap: 12px;
-            }
+        .info-box {
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+        
+        .info-box-gaps {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 1px solid #fecaca;
+        }
+        
+        .info-box-ideal {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #bbf7d0;
+        }
+        
+        .info-box-description {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 1px solid #fde68a;
         }
     </style>
 </head>
@@ -318,210 +241,292 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
         const PHASES = [
             {
                 id: 1,
+                emoji: '🚀',
                 title: 'Kickoff & Setup',
                 subtitle: 'Establish foundational accounts and configurations',
                 duration: '2–3 days',
                 steps: 4,
-                critical: false,
+                color: '#6366f1',
                 details: [
-                    { title: 'Cognito Form Collection', owner: 'EROAD Sales', type: 'Manual', gaps: ['No timezone field', 'No WF group checkbox'], ideal: 'Auto-filled form with validation' },
-                    { title: 'MyEROAD Account Creation', owner: 'EROAD Sales', type: 'Manual', gaps: ['Insecure email delivery'], ideal: 'Secure automated provisioning' },
-                    { title: 'Partner API Key Generation', owner: 'EROAD Sales Ops', type: 'Manual', gaps: ['24h expiry', 'Key type confusion'], ideal: 'Extended validity + clear labeling' },
-                    { title: 'WF Enterprise Setup', owner: 'WF Admin (Sai)', type: 'Manual', gaps: ['Manual Gethome-safe coordination'], ideal: 'Self-service creation' }
+                    { title: 'Cognito Form Collection', owner: 'EROAD Sales', type: 'manual', gaps: ['No timezone field', 'No WF group checkbox'], ideal: 'Auto-filled form with validation' },
+                    { title: 'MyEROAD Account Creation', owner: 'EROAD Sales', type: 'manual', gaps: ['Insecure email delivery'], ideal: 'Secure automated provisioning' },
+                    { title: 'Partner API Key Generation', owner: 'EROAD Sales Ops', type: 'manual', gaps: ['24h expiry', 'Key type confusion'], ideal: 'Extended validity with alerts' },
+                    { title: 'WF Enterprise Setup', owner: 'WF Admin (Sai)', type: 'manual', gaps: ['Manual Gethome-safe steps'], ideal: 'Self-service creation with templates' }
                 ]
             },
             {
                 id: 2,
+                emoji: '🔗',
                 title: 'Integration & Data',
-                subtitle: 'Connect systems and sync data',
+                subtitle: 'Connect systems and synchronize data flows',
                 duration: '1–2 days',
                 steps: 7,
-                critical: false,
+                color: '#8b5cf6',
                 details: [
-                    { title: 'API Key Integration', owner: 'WF Admin (Sai)', type: 'Manual', gaps: ['No auto-validation'], ideal: 'Automated validation + health checks' },
-                    { title: 'Fleet Group Selection', owner: 'WF Onboarding (Sai)', type: 'Manual', gaps: ['Wrong group = missing vehicles'], ideal: 'Preflight check with % coverage' },
-                    { title: 'Organization Creation', owner: 'WF Admin', type: 'Manual', gaps: ['Timezone mismatches'], ideal: 'Auto-suggest from Cognito' },
-                    { title: 'Team Creation', owner: 'WF Admin', type: 'Manual', gaps: ['Manual one-by-one'], ideal: 'Bulk creation from CSV' },
-                    { title: 'User Bulk Upload', owner: 'WF Admin', type: 'Manual', severity: 'HIGH', gaps: ['Email spam', 'Dummy email workaround', '100 user limit'], ideal: 'SSO provisioning + automated bot' },
-                    { title: 'Team Leader Assignment', owner: 'WF Admin', type: 'Manual', gaps: ['No priority field'], ideal: 'Explicit priority UI' },
-                    { title: 'Vehicle-User Mapping', owner: 'WF Admin', type: 'Manual', severity: 'HIGH', gaps: ['Manual per vehicle', 'Unmapped = no alerts'], ideal: 'Bulk mapping with progress indicator' }
+                    { title: 'API Key Integration', owner: 'WF Admin (Sai)', type: 'manual', gaps: ['No auto-validation'], ideal: 'Automated validation with health checks' },
+                    { title: 'Fleet Group Selection', owner: 'WF Onboarding (Sai)', type: 'manual', gaps: ['Wrong group = missing vehicles'], ideal: 'Preflight check with % coverage' },
+                    { title: 'Organization Creation', owner: 'WF Admin', type: 'manual', gaps: ['Timezone mismatches'], ideal: 'Auto-suggest from Cognito data' },
+                    { title: 'Team Creation', owner: 'WF Admin', type: 'manual', gaps: ['Manual one-by-one process'], ideal: 'Bulk creation from CSV' },
+                    { title: 'User Bulk Upload', owner: 'WF Admin', type: 'manual', severity: 'high', gaps: ['Email spam issue', 'Dummy email workaround', '100 user limit'], ideal: 'SSO provisioning with automated bot' },
+                    { title: 'Team Leader Assignment', owner: 'WF Admin', type: 'manual', gaps: ['No priority field'], ideal: 'Explicit escalation priority UI' },
+                    { title: 'Vehicle-User Mapping', owner: 'WF Admin', type: 'manual', severity: 'high', gaps: ['Manual per vehicle', 'Unmapped vehicles = no alerts'], ideal: 'Bulk mapping with progress indicator' }
                 ]
             },
             {
                 id: 3,
+                emoji: '👀',
                 title: 'Monitoring Operations',
-                subtitle: 'Activate live monitoring and workflows',
+                subtitle: 'Activate live monitoring and operational workflows',
                 duration: 'Ongoing',
                 steps: 5,
+                color: '#ec4899',
                 critical: true,
                 details: [
-                    { title: 'Call Center Enablement', owner: 'Gethome-safe + WF', type: 'Manual', gaps: ['Team dependency'], ideal: 'Auto-enable after preflight' },
-                    { title: 'Operator Workflow', owner: 'Call Center Ops', type: 'Manual', gaps: ['Operators skip Done clicks'], ideal: 'Embedded SOP with forced completion' },
-                    { title: 'Activity PDF Upload', owner: 'Call Center Ops', type: 'Manual', gaps: ['Manual Ctrl+P and upload'], ideal: 'Auto-generate and store PDFs' },
+                    { title: 'Call Center Enablement', owner: 'Gethome-safe + WF', type: 'manual', gaps: ['Team dependency bottleneck'], ideal: 'Auto-enable after preflight passes' },
+                    { title: 'Operator Workflow', owner: 'Call Center Ops', type: 'manual', gaps: ['Operators skip Done clicks'], ideal: 'Embedded SOP with forced completion' },
+                    { title: 'Activity PDF Upload', owner: 'Call Center Ops', type: 'manual', gaps: ['Manual Ctrl+P and upload'], ideal: 'Auto-generate and store PDFs' },
                     { 
                         title: 'Monitoring Activation Toggle', 
                         owner: 'EROAD + WF', 
-                        type: 'Manual', 
-                        severity: 'CRITICAL',
-                        description: 'Customer controls monitoring ON/OFF in MyEROAD but Welfare First has zero visibility. No API, no webhook, no timestamp. This creates billing misalignment and operational blind spots.',
-                        gaps: ['Zero visibility of toggle', 'No API/webhook', 'Billing blind spot'], 
+                        type: 'manual', 
+                        severity: 'critical',
+                        description: 'Customer controls monitoring ON/OFF in MyEROAD, but Welfare First has zero visibility. No API, no webhook, no timestamp. Creates billing misalignment and operational blind spots.',
+                        gaps: ['Zero toggle visibility', 'No API/webhook', 'Billing blind spot'], 
                         ideal: 'EROAD webhook with timestamp + vehicle list'
                     },
                     { 
                         title: 'Offboarding Process', 
                         owner: 'WF + EROAD', 
-                        type: 'Manual', 
-                        severity: 'CRITICAL',
-                        description: 'When WF offboards a vehicle, EROAD is not automatically notified. EROAD continues billing, causing manual reconciliation and disputes.',
-                        gaps: ['Manual email', 'EROAD not notified', 'Continued billing'], 
+                        type: 'manual', 
+                        severity: 'critical',
+                        description: 'When WF offboards vehicles, EROAD is not automatically notified. EROAD continues billing, causing manual reconciliation and customer disputes.',
+                        gaps: ['Manual email process', 'EROAD not notified', 'Continued billing'], 
                         ideal: 'Auto-notification with exact timestamp'
                     }
                 ]
             },
             {
                 id: 4,
+                emoji: '🛠️',
                 title: 'Tools & Automation',
-                subtitle: 'Supporting systems and improvements',
+                subtitle: 'Supporting systems and continuous improvements',
                 duration: 'Continuous',
                 steps: 5,
-                critical: false,
+                color: '#f59e0b',
                 details: [
-                    { title: 'Credentials Management', owner: 'WF / InfoSec', type: 'Manual', severity: 'HIGH', gaps: ['Teams doc storage', 'Security risk'], ideal: 'Enterprise secrets manager' },
-                    { title: 'Excel Tracking', owner: 'WF Product', type: 'Manual', gaps: ['Manual', 'Out of sync'], ideal: 'Live dashboard with % completion' },
-                    { title: 'Email Verification Bot', owner: 'Engineering (Tony)', type: 'Automated', gaps: ['Not fully deployed'], ideal: 'Fully automated and integrated' },
-                    { title: 'Browser Extension', owner: 'Engineering / InfoSec', type: 'Automated', gaps: ['Awaiting InfoSec approval'], ideal: 'Approved and deployed' },
-                    { title: 'Preflight Checks', owner: 'Engineering', type: 'Automated', gaps: ['Not implemented'], ideal: 'Full validation suite' }
+                    { title: 'Credentials Management', owner: 'WF / InfoSec', type: 'manual', severity: 'high', gaps: ['Teams doc storage', 'Security risk'], ideal: 'Enterprise secrets manager (Vault/LastPass)' },
+                    { title: 'Excel Tracking', owner: 'WF Product', type: 'manual', gaps: ['Manual updates', 'Out of sync'], ideal: 'Live dashboard with % completion' },
+                    { title: 'Email Verification Bot', owner: 'Engineering (Tony)', type: 'auto', gaps: ['Not fully deployed'], ideal: 'Fully automated and integrated' },
+                    { title: 'Browser Extension', owner: 'Engineering / InfoSec', type: 'auto', gaps: ['Awaiting InfoSec approval'], ideal: 'Approved and deployed with secrets manager' },
+                    { title: 'Preflight Checks', owner: 'Engineering', type: 'auto', gaps: ['Not implemented'], ideal: 'Full validation suite with go/no-go dashboard' }
                 ]
             }
         ];
 
         function App() {
             const [selectedPhase, setSelectedPhase] = useState(null);
-            const criticalCount = PHASES.filter(p => p.critical).length;
+            const [hoveredPhase, setHoveredPhase] = useState(null);
+
+            const criticalPhases = PHASES.filter(p => p.critical);
+            const totalSteps = PHASES.reduce((sum, p) => sum + p.steps, 0);
 
             return (
-                <div className="min-h-screen bg-white">
-                    <div className="header">
-                        <div className="max-w-7xl mx-auto">
-                            <div className="flex items-center justify-between">
+                <div className="min-h-screen p-6 md:p-12">
+                    {/* Header */}
+                    <div className="max-w-7xl mx-auto mb-8">
+                        <div className="glass-card rounded-3xl p-8 md:p-12 border-0">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div>
-                                    <h1 className="text-3xl font-bold mb-1" style={{ letterSpacing: '-0.5px' }}>
-                                        Welfare First — EROAD Onboarding
+                                    <h1 className="text-4xl md:text-5xl font-bold mb-3 gradient-text">
+                                        Welfare First Onboarding
                                     </h1>
-                                    <p className="text-base text-gray-600">A structured 4-phase implementation process</p>
+                                    <p className="text-lg text-gray-600">
+                                        A beautiful journey through 4 phases • {totalSteps} steps • EROAD integration
+                                    </p>
                                 </div>
                                 <div className="flex gap-3">
-                                    <button className="btn-outline btn">Export CSV</button>
-                                    <button className="btn">View Documentation</button>
+                                    <button className="btn btn-primary">
+                                        📥 Export Data
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="mt-8">
+                                <div className="flex items-center justify-between mb-2 text-sm text-gray-600">
+                                    <span>Overall Progress</span>
+                                    <span className="font-semibold">Phase 3 of 4</span>
+                                </div>
+                                <div className="progress-bar">
+                                    <div className="progress-fill" style={{ width: '75%' }}></div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="max-w-7xl mx-auto px-8 py-12">
-                        {criticalCount > 0 && (
-                            <div className="alert-banner mb-12">
-                                <div className="alert-title">{criticalCount} CRITICAL ISSUE{criticalCount > 1 ? 'S' : ''} REQUIRE ATTENTION</div>
-                                <div className="alert-text">Billing misalignment and operational visibility gaps</div>
+                        {/* Critical Alert */}
+                        {criticalPhases.length > 0 && (
+                            <div className="critical-alert rounded-2xl p-6 mt-6 flex items-center gap-4">
+                                <div className="text-4xl">🚨</div>
+                                <div className="flex-1">
+                                    <h3 className="text-lg font-bold text-red-900 mb-1">
+                                        {criticalPhases.length} Critical Issue{criticalPhases.length > 1 ? 's' : ''} Detected
+                                    </h3>
+                                    <p className="text-red-700">
+                                        Monitoring visibility gaps causing billing misalignment
+                                    </p>
+                                </div>
+                                <button 
+                                    onClick={() => setSelectedPhase(criticalPhases[0])}
+                                    className="btn btn-primary whitespace-nowrap"
+                                >
+                                    View Issues →
+                                </button>
                             </div>
                         )}
-
-                        <div className="phase-grid grid grid-cols-2 gap-px bg-gray-200">
-                            {PHASES.map(phase => (
-                                <div 
-                                    key={phase.id}
-                                    className={`phase-card ${phase.critical ? 'critical' : ''}`}
-                                    onClick={() => setSelectedPhase(phase)}
-                                >
-                                    {phase.critical && <div className="critical-badge">CRITICAL</div>}
-                                    <div className="phase-number">PHASE {phase.id}</div>
-                                    <h2 className="phase-title">{phase.title}</h2>
-                                    <p className="phase-subtitle">{phase.subtitle}</p>
-                                    <div className="phase-meta">
-                                        <div className="meta-item">
-                                            <span className="meta-value">{phase.duration}</span>
-                                        </div>
-                                        <div className="meta-item">
-                                            <span className="meta-value">{phase.steps}</span> steps
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
                     </div>
 
+                    {/* Phase Grid */}
+                    <div className="max-w-7xl mx-auto phase-grid grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {PHASES.map(phase => (
+                            <div 
+                                key={phase.id}
+                                className={`glass-card rounded-2xl p-8 phase-${phase.id} ${hoveredPhase === phase.id ? 'floating' : ''}`}
+                                onClick={() => setSelectedPhase(phase)}
+                                onMouseEnter={() => setHoveredPhase(phase.id)}
+                                onMouseLeave={() => setHoveredPhase(null)}
+                            >
+                                <div className="flex items-start justify-between mb-6">
+                                    <div className="emoji">{phase.emoji}</div>
+                                    <span className={`phase-badge badge-${phase.id}`}>
+                                        PHASE {phase.id}
+                                    </span>
+                                </div>
+
+                                <h2 className="text-2xl font-bold mb-2" style={{ color: phase.color }}>
+                                    {phase.title}
+                                </h2>
+                                <p className="text-gray-600 mb-6 leading-relaxed">
+                                    {phase.subtitle}
+                                </p>
+
+                                <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+                                    <div className="flex items-center gap-4">
+                                        <div>
+                                            <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Duration</div>
+                                            <div className="font-semibold" style={{ color: phase.color }}>{phase.duration}</div>
+                                        </div>
+                                        <div className="w-px h-10 bg-gray-200"></div>
+                                        <div>
+                                            <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Steps</div>
+                                            <div className="font-semibold">{phase.steps}</div>
+                                        </div>
+                                    </div>
+                                    {phase.critical && (
+                                        <span className="tag tag-critical">
+                                            ⚠️ CRITICAL
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Modal */}
                     {selectedPhase && (
                         <div className="modal-overlay" onClick={() => setSelectedPhase(null)}>
                             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                                <div className="p-12 border-b border-gray-200">
+                                <div className="p-8 md:p-12 border-b border-gray-200" style={{ background: `linear-gradient(135deg, ${selectedPhase.color}15, ${selectedPhase.color}05)` }}>
                                     <button 
                                         onClick={() => setSelectedPhase(null)}
-                                        className="float-right text-3xl font-light text-gray-400 hover:text-black transition-colors leading-none"
-                                        style={{ marginTop: '-8px' }}
+                                        className="float-right text-4xl font-light text-gray-400 hover:text-gray-900 transition-colors leading-none"
                                     >
                                         ×
                                     </button>
-                                    <div className="phase-number">PHASE {selectedPhase.id}</div>
-                                    <h2 className="text-4xl font-bold mb-3" style={{ letterSpacing: '-0.5px' }}>{selectedPhase.title}</h2>
-                                    <p className="text-lg text-gray-600">{selectedPhase.subtitle}</p>
-                                    <div className="flex gap-8 mt-8">
+                                    <div className="emoji mb-4">{selectedPhase.emoji}</div>
+                                    <span className={`phase-badge badge-${selectedPhase.id} mb-4`}>
+                                        PHASE {selectedPhase.id}
+                                    </span>
+                                    <h2 className="text-4xl font-bold mb-3 mt-4" style={{ color: selectedPhase.color }}>
+                                        {selectedPhase.title}
+                                    </h2>
+                                    <p className="text-xl text-gray-600 mb-6">
+                                        {selectedPhase.subtitle}
+                                    </p>
+                                    <div className="flex gap-6">
                                         <div>
                                             <div className="text-sm text-gray-500 mb-1">Duration</div>
-                                            <div className="text-xl font-semibold">{selectedPhase.duration}</div>
+                                            <div className="text-2xl font-bold" style={{ color: selectedPhase.color }}>
+                                                {selectedPhase.duration}
+                                            </div>
                                         </div>
                                         <div>
                                             <div className="text-sm text-gray-500 mb-1">Total Steps</div>
-                                            <div className="text-xl font-semibold">{selectedPhase.steps}</div>
+                                            <div className="text-2xl font-bold">{selectedPhase.steps}</div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="p-12">
+                                <div className="p-8 md:p-12 space-y-6">
                                     {selectedPhase.details.map((step, idx) => (
-                                        <div key={idx} className="step-item">
-                                            <div className="step-header">
-                                                <div className="step-number">{idx + 1}</div>
+                                        <div key={idx} className="step-card">
+                                            <div className="flex items-start gap-4 mb-4">
+                                                <div 
+                                                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
+                                                    style={{ background: selectedPhase.color }}
+                                                >
+                                                    {idx + 1}
+                                                </div>
                                                 <div className="flex-1">
-                                                    <div className="flex items-center gap-3 flex-wrap">
-                                                        <h3 className="step-title">{step.title}</h3>
-                                                        {step.severity === 'CRITICAL' && <span className="badge badge-critical">CRITICAL</span>}
-                                                        {step.severity === 'HIGH' && <span className="badge badge-high">HIGH PRIORITY</span>}
-                                                        <span className="badge">{step.type.toUpperCase()}</span>
+                                                    <div className="flex items-center gap-3 flex-wrap mb-2">
+                                                        <h3 className="text-xl font-bold text-gray-900">{step.title}</h3>
+                                                        {step.severity === 'critical' && <span className="tag tag-critical">🚨 CRITICAL</span>}
+                                                        {step.severity === 'high' && <span className="tag tag-high">⚠️ HIGH</span>}
+                                                        <span className={`tag ${step.type === 'manual' ? 'tag-manual' : 'tag-auto'}`}>
+                                                            {step.type === 'manual' ? '👤 Manual' : '🤖 Automated'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-sm text-gray-600">
+                                                        <strong>Owner:</strong> {step.owner}
                                                     </div>
                                                 </div>
                                             </div>
-                                            
-                                            <div className="step-meta">
-                                                Owner: {step.owner}
-                                            </div>
 
                                             {step.description && (
-                                                <div className="info-box critical">
-                                                    <div className="info-label">Critical Issue</div>
-                                                    <div className="info-content">{step.description}</div>
+                                                <div className="info-box info-box-description">
+                                                    <div className="text-xs font-bold text-amber-900 uppercase tracking-wide mb-2">
+                                                        📋 Critical Issue Details
+                                                    </div>
+                                                    <div className="text-sm text-amber-900 leading-relaxed">
+                                                        {step.description}
+                                                    </div>
                                                 </div>
                                             )}
 
                                             {step.gaps && step.gaps.length > 0 && (
-                                                <div className="info-box">
-                                                    <div className="info-label">Current Gaps</div>
-                                                    <div className="info-content">
-                                                        {step.gaps.map((gap, i) => (
-                                                            <div key={i} className="mb-1">• {gap}</div>
-                                                        ))}
+                                                <div className="info-box info-box-gaps">
+                                                    <div className="text-xs font-bold text-red-900 uppercase tracking-wide mb-2">
+                                                        ⚠️ Current Gaps
                                                     </div>
+                                                    <ul className="space-y-1">
+                                                        {step.gaps.map((gap, i) => (
+                                                            <li key={i} className="text-sm text-red-800">• {gap}</li>
+                                                        ))}
+                                                    </ul>
                                                 </div>
                                             )}
 
                                             {step.ideal && (
-                                                <div className="info-box">
-                                                    <div className="info-label">Ideal State</div>
-                                                    <div className="info-content">{step.ideal}</div>
+                                                <div className="info-box info-box-ideal">
+                                                    <div className="text-xs font-bold text-green-900 uppercase tracking-wide mb-2">
+                                                        💡 Ideal State Solution
+                                                    </div>
+                                                    <div className="text-sm text-green-800">
+                                                        {step.ideal}
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
