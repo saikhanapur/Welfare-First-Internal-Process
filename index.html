@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WF-EROAD Onboarding Journey</title>
+    <title>WF-EROAD Onboarding</title>
     
     <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
@@ -11,83 +11,101 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body { 
-            font-family: 'Inter', sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #ffffff;
+            color: #000000;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
         .phase-card {
-            background: white;
-            border-radius: 24px;
-            padding: 32px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #ffffff;
+            border: 1px solid #e5e5e5;
+            padding: 40px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             position: relative;
-            min-height: 200px;
         }
         
         .phase-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            border-color: #000000;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
         }
         
         .phase-card.critical {
-            border: 4px solid #ef4444;
-            animation: pulse-red 2s ease-in-out infinite;
+            border-color: #000000;
+            border-width: 2px;
         }
         
-        @keyframes pulse-red {
-            0%, 100% { box-shadow: 0 10px 40px rgba(239, 68, 68, 0.3); }
-            50% { box-shadow: 0 20px 60px rgba(239, 68, 68, 0.5); }
-        }
-        
-        .step-badge {
-            position: absolute;
-            top: -12px;
-            left: 32px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 6px 16px;
-            border-radius: 20px;
+        .phase-number {
             font-size: 14px;
-            font-weight: 800;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #999999;
+            margin-bottom: 16px;
         }
         
-        .arrow-connector {
-            position: absolute;
-            top: 50%;
-            right: -30px;
-            width: 30px;
-            height: 3px;
-            background: #cbd5e1;
-            transform: translateY(-50%);
+        .phase-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 8px;
+            line-height: 1.2;
         }
         
-        .arrow-connector::after {
-            content: '→';
+        .phase-subtitle {
+            font-size: 15px;
+            font-weight: 400;
+            color: #666666;
+            line-height: 1.5;
+        }
+        
+        .phase-meta {
+            display: flex;
+            gap: 24px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .meta-item {
+            font-size: 13px;
+            color: #999999;
+        }
+        
+        .meta-value {
+            font-weight: 600;
+            color: #000000;
+        }
+        
+        .critical-badge {
             position: absolute;
-            right: -20px;
-            top: -18px;
-            font-size: 32px;
-            color: #cbd5e1;
+            top: 40px;
+            right: 40px;
+            background: #000000;
+            color: #ffffff;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
         
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(4px);
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.2s ease;
+            padding: 40px;
         }
         
         @keyframes fadeIn {
@@ -96,63 +114,203 @@
         }
         
         .modal-content {
-            background: white;
-            border-radius: 24px;
-            max-width: 900px;
+            background: #ffffff;
+            max-width: 800px;
+            width: 100%;
             max-height: 85vh;
             overflow-y: auto;
-            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 25px 100px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
         }
         
         @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
+            from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
         
-        .timeline-line {
-            position: absolute;
-            top: 100px;
-            left: 60px;
-            right: 60px;
-            height: 4px;
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #10b981, #f59e0b);
-            border-radius: 2px;
-            z-index: 0;
+        .step-item {
+            border-bottom: 1px solid #f0f0f0;
+            padding: 32px 0;
         }
         
-        .substep {
-            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-            border-left: 4px solid #cbd5e1;
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            transition: all 0.3s ease;
+        .step-item:last-child {
+            border-bottom: none;
         }
         
-        .substep:hover {
-            border-left-color: #667eea;
-            transform: translateX(4px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        .step-header {
+            display: flex;
+            align-items: start;
+            gap: 20px;
+            margin-bottom: 16px;
         }
         
-        .critical-flag {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 800;
-            display: inline-flex;
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: #000000;
+            color: #ffffff;
+            display: flex;
             align-items: center;
-            gap: 6px;
-            animation: shake 0.5s ease infinite;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
         }
         
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-2px); }
-            75% { transform: translateX(2px); }
+        .step-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #000000;
+            flex: 1;
+        }
+        
+        .badge {
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border: 1px solid #e5e5e5;
+            color: #666666;
+        }
+        
+        .badge-critical {
+            background: #000000;
+            color: #ffffff;
+            border-color: #000000;
+        }
+        
+        .badge-high {
+            border-color: #000000;
+            color: #000000;
+        }
+        
+        .step-meta {
+            font-size: 14px;
+            color: #666666;
+            margin-bottom: 16px;
+            padding-left: 52px;
+        }
+        
+        .info-box {
+            padding: 20px;
+            background: #fafafa;
+            border-left: 2px solid #e5e5e5;
+            margin-top: 16px;
+            margin-left: 52px;
+        }
+        
+        .info-box.critical {
+            background: #000000;
+            border-left-color: #000000;
+            color: #ffffff;
+        }
+        
+        .info-box.critical .info-label {
+            color: #999999;
+        }
+        
+        .info-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #999999;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        
+        .info-content {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .info-box.critical .info-content {
+            color: #ffffff;
+        }
+        
+        .info-box:not(.critical) .info-content {
+            color: #666666;
+        }
+        
+        .header {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e5e5;
+            padding: 32px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .btn {
+            background: #000000;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .btn:hover {
+            background: #333333;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #000000;
+            border: 1px solid #e5e5e5;
+        }
+        
+        .btn-outline:hover {
+            background: #fafafa;
+            border-color: #000000;
+        }
+        
+        .alert-banner {
+            background: #000000;
+            color: #ffffff;
+            padding: 24px 40px;
+            margin-bottom: 40px;
+        }
+        
+        .alert-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+        
+        .alert-text {
+            font-size: 14px;
+            color: #cccccc;
+        }
+        
+        @media (max-width: 1024px) {
+            .phase-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .header {
+                padding: 24px 20px;
+            }
+            .phase-card {
+                padding: 24px;
+            }
+            .modal-overlay {
+                padding: 20px;
+            }
+            .info-box {
+                margin-left: 0;
+            }
+            .step-meta {
+                padding-left: 0;
+            }
+            .step-header {
+                flex-direction: column;
+                gap: 12px;
+            }
         }
     </style>
 </head>
@@ -164,283 +322,208 @@
 
         const PHASES = [
             {
-                id: 'phase1',
-                step: 'STEP 1',
-                title: '🚀 Kickoff & Setup',
-                subtitle: 'Get the foundation ready',
-                color: '#3b82f6',
-                duration: '2-3 days',
-                steps: [
-                    { title: 'Cognito Form Sent', owner: 'EROAD Sales', type: 'manual', gaps: ['No timezone field', 'No WF group checkbox'], ideal: 'Auto-filled form with all required fields' },
-                    { title: 'MyEROAD Account Created', owner: 'EROAD Sales', type: 'manual', gaps: ['Insecure email delivery'], ideal: 'Automated secure provisioning' },
-                    { title: 'Partner API Key Generated', owner: 'EROAD Sales Ops', type: 'manual', gaps: ['24h expiry', 'Key type confusion'], ideal: 'Extended validity + clear labeling', critical: false },
-                    { title: 'WF Enterprise Created', owner: 'WF Admin (Sai)', type: 'manual', gaps: ['Manual Gethome-safe coordination'], ideal: 'Self-service creation with templates' }
+                id: 1,
+                title: 'Kickoff & Setup',
+                subtitle: 'Establish foundational accounts and configurations',
+                duration: '2–3 days',
+                steps: 4,
+                critical: false,
+                details: [
+                    { title: 'Cognito Form Collection', owner: 'EROAD Sales', type: 'Manual', gaps: ['No timezone field', 'No WF group checkbox'], ideal: 'Auto-filled form with validation' },
+                    { title: 'MyEROAD Account Creation', owner: 'EROAD Sales', type: 'Manual', gaps: ['Insecure email delivery'], ideal: 'Secure automated provisioning' },
+                    { title: 'Partner API Key Generation', owner: 'EROAD Sales Ops', type: 'Manual', gaps: ['24h expiry', 'Key type confusion'], ideal: 'Extended validity + clear labeling' },
+                    { title: 'WF Enterprise Setup', owner: 'WF Admin (Sai)', type: 'Manual', gaps: ['Manual Gethome-safe coordination'], ideal: 'Self-service creation' }
                 ]
             },
             {
-                id: 'phase2',
-                step: 'STEP 2',
-                title: '🔗 Integration & Data',
+                id: 2,
+                title: 'Integration & Data',
                 subtitle: 'Connect systems and sync data',
-                color: '#8b5cf6',
-                duration: '1-2 days',
-                steps: [
-                    { title: 'API Key Integrated in WF', owner: 'WF Admin (Sai)', type: 'manual', gaps: ['No auto-validation'], ideal: 'Automated validation with health checks' },
-                    { title: 'Fleet Groups Selected', owner: 'WF Onboarding (Sai)', type: 'manual', gaps: ['Wrong group = missing vehicles'], ideal: 'Preflight check showing % coverage' },
-                    { title: 'Organizations Created', owner: 'WF Admin', type: 'manual', gaps: ['Timezone mismatches'], ideal: 'Auto-suggest from Cognito data' },
-                    { title: 'Teams Created', owner: 'WF Admin', type: 'manual', gaps: ['Manual one-by-one'], ideal: 'Bulk creation from CSV' },
-                    { title: 'Users Bulk Uploaded', owner: 'WF Admin', type: 'manual', severity: 'HIGH', gaps: ['Email verification spam', 'Dummy emails workaround', '100 user limit'], ideal: 'SSO provisioning + automated bot' },
-                    { title: 'Team Leaders Assigned', owner: 'WF Admin', type: 'manual', gaps: ['No priority field'], ideal: 'Explicit escalation priority UI' },
-                    { title: 'Vehicles Mapped to Users', owner: 'WF Admin', type: 'manual', severity: 'HIGH', gaps: ['Manual per vehicle', 'Error-prone', 'Unmapped = no alerts!'], ideal: 'Bulk mapping with progress indicator' }
+                duration: '1–2 days',
+                steps: 7,
+                critical: false,
+                details: [
+                    { title: 'API Key Integration', owner: 'WF Admin (Sai)', type: 'Manual', gaps: ['No auto-validation'], ideal: 'Automated validation + health checks' },
+                    { title: 'Fleet Group Selection', owner: 'WF Onboarding (Sai)', type: 'Manual', gaps: ['Wrong group = missing vehicles'], ideal: 'Preflight check with % coverage' },
+                    { title: 'Organization Creation', owner: 'WF Admin', type: 'Manual', gaps: ['Timezone mismatches'], ideal: 'Auto-suggest from Cognito' },
+                    { title: 'Team Creation', owner: 'WF Admin', type: 'Manual', gaps: ['Manual one-by-one'], ideal: 'Bulk creation from CSV' },
+                    { title: 'User Bulk Upload', owner: 'WF Admin', type: 'Manual', severity: 'HIGH', gaps: ['Email spam', 'Dummy email workaround', '100 user limit'], ideal: 'SSO provisioning + automated bot' },
+                    { title: 'Team Leader Assignment', owner: 'WF Admin', type: 'Manual', gaps: ['No priority field'], ideal: 'Explicit priority UI' },
+                    { title: 'Vehicle-User Mapping', owner: 'WF Admin', type: 'Manual', severity: 'HIGH', gaps: ['Manual per vehicle', 'Unmapped = no alerts'], ideal: 'Bulk mapping with progress indicator' }
                 ]
             },
             {
-                id: 'phase3',
-                step: 'STEP 3',
-                title: '👀 Monitoring Operations',
-                subtitle: 'Activate monitoring and workflows',
-                color: '#10b981',
+                id: 3,
+                title: 'Monitoring Operations',
+                subtitle: 'Activate live monitoring and workflows',
                 duration: 'Ongoing',
+                steps: 5,
                 critical: true,
-                steps: [
-                    { title: 'Call Center Enabled', owner: 'Gethome-safe + WF', type: 'manual', gaps: ['Team dependency'], ideal: 'Auto-enable after preflight passes' },
-                    { title: 'Monitoring Workflow Active', owner: 'Call Center Ops', type: 'manual', gaps: ['Operators skip "Done" clicks'], ideal: 'Embedded SOP checklist with forced completion' },
-                    { title: 'Activity PDFs Uploaded', owner: 'Call Center Ops', type: 'manual', gaps: ['Manual Ctrl+P and upload'], ideal: 'Auto-generate and store PDFs' },
-                    { title: '🚨 MONITORING ACTIVATION', owner: 'EROAD + WF', type: 'manual', severity: 'CRITICAL', gaps: ['ZERO visibility of customer ON/OFF toggle', 'No API/webhook', 'Billing blind spot'], ideal: 'EROAD webhook with timestamp + vehicle list', description: 'Customer can toggle monitoring ON/OFF in MyEROAD but WF has NO visibility. This creates billing misalignment and operational chaos.' },
-                    { title: '🚨 OFFBOARDING PROCESS', owner: 'WF + EROAD', type: 'manual', severity: 'CRITICAL', gaps: ['Manual email process', 'EROAD not notified', 'Continues billing'], ideal: 'Auto-notification to EROAD with exact timestamp', description: 'When WF offboards a vehicle, EROAD is not notified automatically and continues billing, causing disputes.' }
+                details: [
+                    { title: 'Call Center Enablement', owner: 'Gethome-safe + WF', type: 'Manual', gaps: ['Team dependency'], ideal: 'Auto-enable after preflight' },
+                    { title: 'Operator Workflow', owner: 'Call Center Ops', type: 'Manual', gaps: ['Operators skip Done clicks'], ideal: 'Embedded SOP with forced completion' },
+                    { title: 'Activity PDF Upload', owner: 'Call Center Ops', type: 'Manual', gaps: ['Manual Ctrl+P and upload'], ideal: 'Auto-generate and store PDFs' },
+                    { 
+                        title: 'Monitoring Activation Toggle', 
+                        owner: 'EROAD + WF', 
+                        type: 'Manual', 
+                        severity: 'CRITICAL',
+                        description: 'Customer controls monitoring ON/OFF in MyEROAD but Welfare First has zero visibility. No API, no webhook, no timestamp. This creates billing misalignment and operational blind spots.',
+                        gaps: ['Zero visibility of toggle', 'No API/webhook', 'Billing blind spot'], 
+                        ideal: 'EROAD webhook with timestamp + vehicle list'
+                    },
+                    { 
+                        title: 'Offboarding Process', 
+                        owner: 'WF + EROAD', 
+                        type: 'Manual', 
+                        severity: 'CRITICAL',
+                        description: 'When WF offboards a vehicle, EROAD is not automatically notified. EROAD continues billing, causing manual reconciliation and disputes.',
+                        gaps: ['Manual email', 'EROAD not notified', 'Continued billing'], 
+                        ideal: 'Auto-notification with exact timestamp'
+                    }
                 ]
             },
             {
-                id: 'phase4',
-                step: 'STEP 4',
-                title: '🛠️ Tools & Automation',
-                subtitle: 'Supporting systems and future improvements',
-                color: '#f59e0b',
+                id: 4,
+                title: 'Tools & Automation',
+                subtitle: 'Supporting systems and improvements',
                 duration: 'Continuous',
-                steps: [
-                    { title: 'Credentials Management', owner: 'WF / InfoSec', type: 'manual', severity: 'HIGH', gaps: ['Teams doc storage', 'Security risk'], ideal: 'Enterprise secrets manager (LastPass/Vault)' },
-                    { title: 'Excel Onboarding Tracker', owner: 'WF Product', type: 'manual', gaps: ['Manual tracking', 'Out of sync'], ideal: 'Live dashboard with % completion' },
-                    { title: 'Email Verification Bot', owner: 'Engineering (Tony)', type: 'auto', gaps: ['Not fully deployed'], ideal: 'Fully automated and integrated' },
-                    { title: 'Browser Portal Extension', owner: 'Engineering / InfoSec', type: 'auto', gaps: ['Awaiting InfoSec approval'], ideal: 'Approved and deployed with secrets manager' },
-                    { title: 'Preflight API Checks', owner: 'Engineering', type: 'auto', gaps: ['Not implemented'], ideal: 'Full validation suite with go/no-go dashboard' }
+                steps: 5,
+                critical: false,
+                details: [
+                    { title: 'Credentials Management', owner: 'WF / InfoSec', type: 'Manual', severity: 'HIGH', gaps: ['Teams doc storage', 'Security risk'], ideal: 'Enterprise secrets manager' },
+                    { title: 'Excel Tracking', owner: 'WF Product', type: 'Manual', gaps: ['Manual', 'Out of sync'], ideal: 'Live dashboard with % completion' },
+                    { title: 'Email Verification Bot', owner: 'Engineering (Tony)', type: 'Automated', gaps: ['Not fully deployed'], ideal: 'Fully automated and integrated' },
+                    { title: 'Browser Extension', owner: 'Engineering / InfoSec', type: 'Automated', gaps: ['Awaiting InfoSec approval'], ideal: 'Approved and deployed' },
+                    { title: 'Preflight Checks', owner: 'Engineering', type: 'Automated', gaps: ['Not implemented'], ideal: 'Full validation suite' }
                 ]
             }
         ];
 
         function App() {
             const [selectedPhase, setSelectedPhase] = useState(null);
-            const [viewMode, setViewMode] = useState('timeline'); // timeline or list
+            const criticalCount = PHASES.filter(p => p.critical).length;
 
             return (
-                <div className="min-h-screen p-8">
-                    {/* Header */}
-                    <div className="max-w-7xl mx-auto mb-8">
-                        <div className="bg-white rounded-3xl shadow-2xl p-8 mb-6">
+                <div className="min-h-screen bg-white">
+                    <div className="header">
+                        <div className="max-w-7xl mx-auto">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h1 className="text-4xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                                        WF — EROAD Onboarding Journey
+                                    <h1 className="text-3xl font-bold mb-1" style={{ letterSpacing: '-0.5px' }}>
+                                        Welfare First — EROAD Onboarding
                                     </h1>
-                                    <p className="text-gray-600 text-lg">A simple 4-phase process to get customers live</p>
+                                    <p className="text-base text-gray-600">A structured 4-phase implementation process</p>
                                 </div>
                                 <div className="flex gap-3">
-                                    <button 
-                                        onClick={() => setViewMode('timeline')}
-                                        className={`px-6 py-3 rounded-xl font-bold transition-all ${viewMode === 'timeline' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg' : 'bg-gray-100 hover:bg-gray-200'}`}>
-                                        📊 Timeline View
-                                    </button>
-                                    <button 
-                                        onClick={() => setViewMode('list')}
-                                        className={`px-6 py-3 rounded-xl font-bold transition-all ${viewMode === 'list' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg' : 'bg-gray-100 hover:bg-gray-200'}`}>
-                                        📝 List View
-                                    </button>
+                                    <button className="btn-outline btn">Export CSV</button>
+                                    <button className="btn">View Documentation</button>
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Critical Alerts Banner */}
-                        <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-2xl shadow-2xl p-6 mb-6">
-                            <div className="flex items-center gap-4">
-                                <div className="text-5xl">🚨</div>
-                                <div className="flex-1">
-                                    <h2 className="text-white text-2xl font-black mb-2">2 CRITICAL GAPS REQUIRE IMMEDIATE ATTENTION</h2>
-                                    <p className="text-red-100 text-lg">These issues cause billing disputes and operational blind spots</p>
-                                </div>
-                                <button 
-                                    onClick={() => setSelectedPhase(PHASES[2])}
-                                    className="bg-white text-red-600 px-6 py-3 rounded-xl font-black hover:scale-105 transition-all shadow-lg">
-                                    VIEW GAPS →
-                                </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Timeline View */}
-                    {viewMode === 'timeline' && (
-                        <div className="max-w-7xl mx-auto relative">
-                            <div className="timeline-line"></div>
-                            <div className="grid grid-cols-4 gap-8 relative z-10">
-                                {PHASES.map((phase, idx) => (
-                                    <div key={phase.id} className="relative">
-                                        <div 
-                                            className={`phase-card ${phase.critical ? 'critical' : ''}`}
-                                            onClick={() => setSelectedPhase(phase)}
-                                            style={{ borderTopColor: phase.color, borderTopWidth: '6px' }}
-                                        >
-                                            <div className="step-badge">{phase.step}</div>
-                                            <div className="text-4xl mb-4">{phase.title.split(' ')[0]}</div>
-                                            <h3 className="text-xl font-black mb-2 text-gray-900">{phase.title.substring(2)}</h3>
-                                            <p className="text-gray-600 mb-4">{phase.subtitle}</p>
-                                            <div className="flex items-center justify-between mt-auto">
-                                                <span className="text-sm font-bold" style={{ color: phase.color }}>⏱ {phase.duration}</span>
-                                                <span className="text-sm font-bold text-gray-400">{phase.steps.length} steps</span>
-                                            </div>
-                                            {phase.critical && (
-                                                <div className="mt-4">
-                                                    <div className="critical-flag">
-                                                        ⚠️ CRITICAL ISSUES
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                        {idx < PHASES.length - 1 && <div className="arrow-connector"></div>}
-                                    </div>
-                                ))}
+                    <div className="max-w-7xl mx-auto px-8 py-12">
+                        {criticalCount > 0 && (
+                            <div className="alert-banner mb-12">
+                                <div className="alert-title">{criticalCount} CRITICAL ISSUE{criticalCount > 1 ? 'S' : ''} REQUIRE ATTENTION</div>
+                                <div className="alert-text">Billing misalignment and operational visibility gaps</div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* List View */}
-                    {viewMode === 'list' && (
-                        <div className="max-w-5xl mx-auto space-y-6">
+                        <div className="phase-grid grid grid-cols-2 gap-px bg-gray-200">
                             {PHASES.map(phase => (
-                                <div key={phase.id} className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                                    <div className="p-6" style={{ background: `linear-gradient(135deg, ${phase.color}20, ${phase.color}10)`, borderLeft: `6px solid ${phase.color}` }}>
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="flex items-center gap-4">
-                                                <div className="text-4xl">{phase.title.split(' ')[0]}</div>
-                                                <div>
-                                                    <h3 className="text-2xl font-black text-gray-900">{phase.title.substring(2)}</h3>
-                                                    <p className="text-gray-600">{phase.subtitle}</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-sm font-bold text-gray-500">Duration</div>
-                                                <div className="text-xl font-black" style={{ color: phase.color }}>{phase.duration}</div>
-                                            </div>
+                                <div 
+                                    key={phase.id}
+                                    className={`phase-card ${phase.critical ? 'critical' : ''}`}
+                                    onClick={() => setSelectedPhase(phase)}
+                                >
+                                    {phase.critical && <div className="critical-badge">CRITICAL</div>}
+                                    <div className="phase-number">PHASE {phase.id}</div>
+                                    <h2 className="phase-title">{phase.title}</h2>
+                                    <p className="phase-subtitle">{phase.subtitle}</p>
+                                    <div className="phase-meta">
+                                        <div className="meta-item">
+                                            <span className="meta-value">{phase.duration}</span>
                                         </div>
-                                        <div className="space-y-3">
-                                            {phase.steps.map((step, idx) => (
-                                                <div key={idx} className={`substep ${step.severity === 'CRITICAL' ? 'border-l-red-500 bg-red-50' : step.severity === 'HIGH' ? 'border-l-orange-500 bg-orange-50' : ''}`}>
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center gap-3 mb-2">
-                                                                <span className="font-black text-gray-900">{step.title}</span>
-                                                                {step.severity === 'CRITICAL' && <span className="critical-flag text-xs">🚨 CRITICAL</span>}
-                                                                {step.severity === 'HIGH' && <span className="px-2 py-1 bg-orange-500 text-white rounded text-xs font-bold">⚠️ HIGH</span>}
-                                                                <span className={`px-2 py-1 rounded text-xs font-bold ${step.type === 'manual' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
-                                                                    {step.type === 'manual' ? '👤 MANUAL' : '🤖 AUTO'}
-                                                                </span>
-                                                            </div>
-                                                            <div className="text-sm text-gray-600 mb-1">
-                                                                <strong>Owner:</strong> {step.owner}
-                                                            </div>
-                                                            {step.description && (
-                                                                <div className="text-sm text-gray-700 bg-white p-3 rounded-lg mt-2">
-                                                                    {step.description}
-                                                                </div>
-                                                            )}
-                                                            {step.gaps && step.gaps.length > 0 && (
-                                                                <div className="mt-2">
-                                                                    <div className="text-xs font-bold text-red-700 mb-1">⚠️ Current Gaps:</div>
-                                                                    <div className="text-xs text-red-600">{step.gaps.join(' • ')}</div>
-                                                                </div>
-                                                            )}
-                                                            {step.ideal && (
-                                                                <div className="mt-2">
-                                                                    <div className="text-xs font-bold text-green-700 mb-1">💡 Ideal State:</div>
-                                                                    <div className="text-xs text-green-600">{step.ideal}</div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                        <div className="meta-item">
+                                            <span className="meta-value">{phase.steps}</span> steps
                                         </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    )}
+                    </div>
 
-                    {/* Modal for Phase Details */}
                     {selectedPhase && (
                         <div className="modal-overlay" onClick={() => setSelectedPhase(null)}>
                             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                                <div className="sticky top-0 p-8" style={{ background: `linear-gradient(135deg, ${selectedPhase.color}, ${selectedPhase.color}dd)` }}>
+                                <div className="p-12 border-b border-gray-200">
                                     <button 
                                         onClick={() => setSelectedPhase(null)}
-                                        className="absolute top-6 right-6 w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white text-2xl font-bold transition-all">
+                                        className="float-right text-3xl font-light text-gray-400 hover:text-black transition-colors leading-none"
+                                        style={{ marginTop: '-8px' }}
+                                    >
                                         ×
                                     </button>
-                                    <div className="text-6xl mb-4">{selectedPhase.title.split(' ')[0]}</div>
-                                    <h2 className="text-4xl font-black text-white mb-2">{selectedPhase.title.substring(2)}</h2>
-                                    <p className="text-white text-xl opacity-90">{selectedPhase.subtitle}</p>
-                                    <div className="flex gap-4 mt-6">
-                                        <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
-                                            <div className="text-white/80 text-sm font-bold">Duration</div>
-                                            <div className="text-white text-lg font-black">{selectedPhase.duration}</div>
+                                    <div className="phase-number">PHASE {selectedPhase.id}</div>
+                                    <h2 className="text-4xl font-bold mb-3" style={{ letterSpacing: '-0.5px' }}>{selectedPhase.title}</h2>
+                                    <p className="text-lg text-gray-600">{selectedPhase.subtitle}</p>
+                                    <div className="flex gap-8 mt-8">
+                                        <div>
+                                            <div className="text-sm text-gray-500 mb-1">Duration</div>
+                                            <div className="text-xl font-semibold">{selectedPhase.duration}</div>
                                         </div>
-                                        <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
-                                            <div className="text-white/80 text-sm font-bold">Total Steps</div>
-                                            <div className="text-white text-lg font-black">{selectedPhase.steps.length}</div>
+                                        <div>
+                                            <div className="text-sm text-gray-500 mb-1">Total Steps</div>
+                                            <div className="text-xl font-semibold">{selectedPhase.steps}</div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="p-8 space-y-4">
-                                    {selectedPhase.steps.map((step, idx) => (
-                                        <div key={idx} className={`substep ${step.severity === 'CRITICAL' ? 'border-l-red-500 bg-red-50' : step.severity === 'HIGH' ? 'border-l-orange-500 bg-orange-50' : ''}`}>
-                                            <div className="flex items-start gap-4">
-                                                <div className="w-10 h-10 rounded-full flex items-center justify-center font-black text-white" style={{ background: selectedPhase.color }}>
-                                                    {idx + 1}
-                                                </div>
+                                <div className="p-12">
+                                    {selectedPhase.details.map((step, idx) => (
+                                        <div key={idx} className="step-item">
+                                            <div className="step-header">
+                                                <div className="step-number">{idx + 1}</div>
                                                 <div className="flex-1">
-                                                    <div className="flex items-center gap-3 mb-2">
-                                                        <h3 className="font-black text-lg text-gray-900">{step.title}</h3>
-                                                        {step.severity === 'CRITICAL' && <span className="critical-flag">🚨 CRITICAL</span>}
-                                                        {step.severity === 'HIGH' && <span className="px-2 py-1 bg-orange-500 text-white rounded text-xs font-bold">⚠️ HIGH</span>}
+                                                    <div className="flex items-center gap-3 flex-wrap">
+                                                        <h3 className="step-title">{step.title}</h3>
+                                                        {step.severity === 'CRITICAL' && <span className="badge badge-critical">CRITICAL</span>}
+                                                        {step.severity === 'HIGH' && <span className="badge badge-high">HIGH PRIORITY</span>}
+                                                        <span className="badge">{step.type.toUpperCase()}</span>
                                                     </div>
-                                                    <div className="text-sm text-gray-600 mb-3">
-                                                        <strong>Owner:</strong> {step.owner} • 
-                                                        <span className={`ml-2 px-2 py-0.5 rounded text-xs font-bold ${step.type === 'manual' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
-                                                            {step.type === 'manual' ? '👤 MANUAL' : '🤖 AUTO'}
-                                                        </span>
-                                                    </div>
-                                                    {step.description && (
-                                                        <div className="bg-white p-4 rounded-lg mb-3 border-2 border-red-200">
-                                                            <div className="font-bold text-red-900 mb-2">📋 Description</div>
-                                                            <div className="text-sm text-gray-700">{step.description}</div>
-                                                        </div>
-                                                    )}
-                                                    {step.gaps && step.gaps.length > 0 && (
-                                                        <div className="bg-red-50 p-4 rounded-lg mb-3 border-l-4 border-red-500">
-                                                            <div className="font-bold text-red-900 mb-2">⚠️ Current Gaps</div>
-                                                            <ul className="space-y-1">
-                                                                {step.gaps.map((gap, i) => (
-                                                                    <li key={i} className="text-sm text-red-700">• {gap}</li>
-                                                                ))}
-                                                            </ul>
-                                                        </div>
-                                                    )}
-                                                    {step.ideal && (
-                                                        <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
-                                                            <div className="font-bold text-green-900 mb-2">💡 Ideal State</div>
-                                                            <div className="text-sm text-green-700">{step.ideal}</div>
-                                                        </div>
-                                                    )}
                                                 </div>
                                             </div>
+                                            
+                                            <div className="step-meta">
+                                                Owner: {step.owner}
+                                            </div>
+
+                                            {step.description && (
+                                                <div className="info-box critical">
+                                                    <div className="info-label">Critical Issue</div>
+                                                    <div className="info-content">{step.description}</div>
+                                                </div>
+                                            )}
+
+                                            {step.gaps && step.gaps.length > 0 && (
+                                                <div className="info-box">
+                                                    <div className="info-label">Current Gaps</div>
+                                                    <div className="info-content">
+                                                        {step.gaps.map((gap, i) => (
+                                                            <div key={i} className="mb-1">• {gap}</div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {step.ideal && (
+                                                <div className="info-box">
+                                                    <div className="info-label">Ideal State</div>
+                                                    <div className="info-content">{step.ideal}</div>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
