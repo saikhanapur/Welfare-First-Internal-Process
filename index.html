@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welfare First — EROAD Customer Onboarding Process</title>
+    <title>WF-EROAD Onboarding Journey</title>
     
     <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
@@ -14,262 +14,436 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; overflow: hidden; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
         
-        .node-card {
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: absolute;
-            min-width: 220px;
+        .phase-card {
             background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            border: 3px solid;
-            font-size: 15px;
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            min-height: 200px;
         }
         
-        .node-card:hover {
-            transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-            z-index: 100;
+        .phase-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
         }
         
-        .node-card.selected {
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.4);
-            z-index: 101;
+        .phase-card.critical {
+            border: 4px solid #ef4444;
+            animation: pulse-red 2s ease-in-out infinite;
         }
         
-        .node-card.audit-critical {
-            border-color: #ef4444 !important;
-            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%) !important;
-            animation: pulse-critical 2s ease-in-out infinite;
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 10px 40px rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 20px 60px rgba(239, 68, 68, 0.5); }
         }
         
-        .node-card.audit-high {
-            border-color: #f59e0b !important;
-            background: linear-gradient(135deg, #fffbeb 0%, #fed7aa 100%) !important;
+        .step-badge {
+            position: absolute;
+            top: -12px;
+            left: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
         
-        @keyframes pulse-critical {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+        .arrow-connector {
+            position: absolute;
+            top: 50%;
+            right: -30px;
+            width: 30px;
+            height: 3px;
+            background: #cbd5e1;
+            transform: translateY(-50%);
         }
         
-        .edge-line { stroke: #cbd5e1; stroke-width: 3; fill: none; }
-        .edge-arrow { fill: #cbd5e1; }
+        .arrow-connector::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: -18px;
+            font-size: 32px;
+            color: #cbd5e1;
+        }
         
-        @media print { .no-print { display: none !important; } }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 100px rgba(0,0,0,0.3);
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .timeline-line {
+            position: absolute;
+            top: 100px;
+            left: 60px;
+            right: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #10b981, #f59e0b);
+            border-radius: 2px;
+            z-index: 0;
+        }
+        
+        .substep {
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            border-left: 4px solid #cbd5e1;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .substep:hover {
+            border-left-color: #667eea;
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .critical-flag {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            animation: shake 0.5s ease infinite;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState } = React;
 
-        const NODES = [
-            { id: 'cognitoForm', title: 'Cognito Onboarding Form', category: 'Account/Setup', x: 50, y: 120, owner: 'EROAD Sales', severity: 'MEDIUM', manual: true,
-              context: 'EROAD sends customer a Cognito form to collect vehicle registrations, locations, and escalation contacts',
-              inputs: ['Customer details', 'Vehicle regos', 'Locations'], downstream: ['MyEROAD account', 'User uploads'],
-              gaps: ['No timezone field', 'No WF group'], workarounds: ['Manual follow-up'], ideal: ['Make timezone required'] },
-            { id: 'myeroadAccount', title: 'MyEROAD Account', category: 'Account/Setup', x: 50, y: 270, owner: 'EROAD Sales', severity: 'MEDIUM', manual: true,
-              context: 'Sales creates MyEROAD account and sends credentials', inputs: ['Cognito data'], downstream: ['API key'],
-              gaps: ['No standardized handoff', 'Email security risk'], workarounds: ['Manual email'], ideal: ['Automated provisioning'] },
-            { id: 'apiKeyGeneration', title: 'API Key Generation', category: 'Account/Setup', x: 50, y: 420, owner: 'EROAD Sales Ops', severity: 'MEDIUM', manual: true,
-              context: 'Generate partner API key via secure vault (24h expiry)', inputs: ['MyEROAD account'], downstream: ['API integration'],
-              gaps: ['24h expiry', 'Key type confusion'], workarounds: ['Request resend'], ideal: ['Extended validity'] },
-            { id: 'enterpriseCreation', title: 'WF Enterprise Creation', category: 'Account/Setup', x: 350, y: 120, owner: 'WF Admin (Sai)', severity: 'MEDIUM', manual: true,
-              context: 'Create WF enterprise (one per customer, ties to API key)', inputs: ['Customer name', 'API key'], downstream: ['Organizations'],
-              gaps: ['Manual Gethome-safe steps'], workarounds: ['Manual coordination'], ideal: ['Self-service creation'] },
-            { id: 'apiKeyIntegration', title: 'API Key Integration', category: 'Data & Integration', x: 350, y: 420, owner: 'WF Admin (Sai)', severity: 'LOW', manual: true,
-              context: 'Add API key in WF, enable driver sync, validate', inputs: ['Partner API key'], downstream: ['Group selection'],
-              gaps: ['Malformed keys', 'No validation'], workarounds: ['Regenerate'], ideal: ['Auto validation'] },
-            { id: 'groupSelection', title: 'Fleet Group Selection', category: 'Data & Integration', x: 650, y: 420, owner: 'WF Onboarding (Sai)', severity: 'MEDIUM', manual: true,
-              context: 'Select correct groups - wrong group = missing vehicles', inputs: ['API connection', 'Groups'], downstream: ['Vehicle mapping'],
-              gaps: ['Wrong group = missing vehicles'], workarounds: ['Manual verification'], ideal: ['Preflight % check'] },
-            { id: 'orgCreation', title: 'Organization Creation', category: 'Account/Setup', x: 650, y: 120, owner: 'WF Admin', severity: 'MEDIUM', manual: true,
-              context: 'Create orgs with contact, URL, timezone', inputs: ['Enterprise', 'Cognito data'], downstream: ['Teams'],
-              gaps: ['Timezone mismatches'], workarounds: ['Manual entry'], ideal: ['Auto-suggest from Cognito'] },
-            { id: 'teamCreation', title: 'Team Creation', category: 'Account/Setup', x: 950, y: 120, owner: 'WF Admin', severity: 'LOW', manual: true,
-              context: 'Create teams for locations/branches', inputs: ['Organization', 'Locations'], downstream: ['Users'],
-              gaps: ['Manual process'], workarounds: ['One by one'], ideal: ['Bulk creation'] },
-            { id: 'userBulkUpload', title: 'User Bulk Upload', category: 'Account/Setup', x: 950, y: 270, owner: 'WF Admin', severity: 'HIGH', manual: true,
-              context: 'Bulk upload via CSV (max 100) - email verification bottleneck', inputs: ['Contacts', 'CSV'], downstream: ['Team leaders'],
-              gaps: ['Email spam', 'No SSO', '100 limit'], workarounds: ['Dummy emails', 'Tony\'s bot'], ideal: ['SSO provisioning'] },
-            { id: 'teamLeaderAssignment', title: 'Team Leader Assignment', category: 'Account/Setup', x: 950, y: 420, owner: 'WF Admin', severity: 'MEDIUM', manual: true,
-              context: 'Assign leaders via UI - no priority field', inputs: ['Users', 'Teams'], downstream: ['Escalation'],
-              gaps: ['No ordering field'], workarounds: ['Name suffixes'], ideal: ['Explicit priority'] },
-            { id: 'vehicleUserMapping', title: 'Vehicle→User Mapping', category: 'Data & Integration', x: 1250, y: 270, owner: 'WF Admin', severity: 'HIGH', manual: true,
-              context: 'CRITICAL: Unmapped vehicles won\'t appear as alerts', inputs: ['Vehicle list', 'Users'], downstream: ['Alerts'],
-              gaps: ['Manual per vehicle', 'Error-prone'], workarounds: ['Manual assignment'], ideal: ['Bulk mapping'] },
-            { id: 'callCenterEnable', title: 'Call Center Enable', category: 'Ops/Monitoring', x: 50, y: 650, owner: 'Gethome-safe + WF', severity: 'MEDIUM', manual: true,
-              context: 'Gethome-safe must enable - Sai cannot', inputs: ['Enterprise setup'], downstream: ['Monitoring'],
-              gaps: ['Team dependency'], workarounds: ['Manual request'], ideal: ['Auto-enable'] },
-            { id: 'monitoringWorkflow', title: 'Monitoring Workflow', category: 'Ops/Monitoring', x: 350, y: 650, owner: 'Call Center Ops', severity: 'MEDIUM', manual: true,
-              context: 'Operators follow SOP - many skip marking Done', inputs: ['Alerts', 'SOP'], downstream: ['PDF upload'],
-              gaps: ['Skip Done', 'No forced completion'], workarounds: ['Manual checklist'], ideal: ['Embedded SOP'] },
-            { id: 'activityPdfUpload', title: 'Activity PDF Upload', category: 'Ops/Monitoring', x: 650, y: 650, owner: 'Call Center Ops', severity: 'MEDIUM', manual: true,
-              context: 'Save as PDF (Ctrl+P), upload, add notes', inputs: ['Activity details'], downstream: ['Records'],
-              gaps: ['Manual PDF save/upload'], workarounds: ['Ctrl+P'], ideal: ['Auto-generate PDF'] },
-            { id: 'monitoringActivation', title: '⚠️ Monitoring Activation', category: 'Ops/Monitoring', x: 950, y: 650, owner: 'EROAD + WF', severity: 'CRITICAL', manual: true,
-              context: 'CRITICAL: Customer controls ON/OFF - WF has ZERO visibility', inputs: ['Customer decision'], downstream: ['Billing'],
-              gaps: ['NO API/webhook', 'NO timestamp', 'Billing misalignment'], workarounds: ['None - complete gap'], ideal: ['EROAD webhook'] },
-            { id: 'offboardingProcess', title: '⚠️ Offboarding', category: 'Ops/Monitoring', x: 1250, y: 650, owner: 'WF + EROAD', severity: 'CRITICAL', manual: true,
-              context: 'CRITICAL: Manual email - EROAD not notified, continues billing', inputs: ['Offboard request'], downstream: ['Billing'],
-              gaps: ['Manual email', 'EROAD not notified', 'Billing disputes'], workarounds: ['Manual emails'], ideal: ['Auto notification'] },
-            { id: 'credentialsManagement', title: 'Credentials Management', category: 'Automation/Tools', x: 50, y: 900, owner: 'WF / InfoSec', severity: 'HIGH', manual: true,
-              context: 'Credentials in Teams doc - security risk', inputs: ['Credentials'], downstream: ['Operations'],
-              gaps: ['Teams doc', 'Security risk'], workarounds: ['Teams doc'], ideal: ['Secrets manager'] },
-            { id: 'excelTracking', title: 'Excel Tracker', category: 'Automation/Tools', x: 350, y: 900, owner: 'WF Product', severity: 'MEDIUM', manual: true,
-              context: 'Manual Excel tracker - no live updates', inputs: ['Onboarding steps'], downstream: ['Progress'],
-              gaps: ['Manual', 'Out of sync'], workarounds: ['Manual updates'], ideal: ['Live dashboard'] },
-            { id: 'verificationBot', title: 'Verification Bot', category: 'Automation/Tools', x: 650, y: 900, owner: 'Engineering (Tony)', severity: 'LOW', manual: false,
-              context: 'Tony\'s bot auto-confirms emails', inputs: ['Verification emails'], downstream: ['User activation'],
-              gaps: ['Not fully deployed'], workarounds: ['Manual clicks'], ideal: ['Fully automated'] },
-            { id: 'browserExtension', title: 'Browser Extension', category: 'Automation/Tools', x: 950, y: 900, owner: 'Engineering / InfoSec', severity: 'LOW', manual: false,
-              context: 'Portal switching extension - awaiting approval', inputs: ['Portal URLs'], downstream: ['Faster workflow'],
-              gaps: ['Awaiting approval'], workarounds: ['Manual login'], ideal: ['Approved'] },
-            { id: 'preflightChecks', title: 'Preflight Checks', category: 'Automation/Tools', x: 1250, y: 900, owner: 'Engineering', severity: 'LOW', manual: false,
-              context: 'Automated validation - prevents errors', inputs: ['API key', 'Groups'], downstream: ['Quality'],
-              gaps: ['Not implemented'], workarounds: ['Manual testing'], ideal: ['Full validation'] }
+        const PHASES = [
+            {
+                id: 'phase1',
+                step: 'STEP 1',
+                title: '🚀 Kickoff & Setup',
+                subtitle: 'Get the foundation ready',
+                color: '#3b82f6',
+                duration: '2-3 days',
+                steps: [
+                    { title: 'Cognito Form Sent', owner: 'EROAD Sales', type: 'manual', gaps: ['No timezone field', 'No WF group checkbox'], ideal: 'Auto-filled form with all required fields' },
+                    { title: 'MyEROAD Account Created', owner: 'EROAD Sales', type: 'manual', gaps: ['Insecure email delivery'], ideal: 'Automated secure provisioning' },
+                    { title: 'Partner API Key Generated', owner: 'EROAD Sales Ops', type: 'manual', gaps: ['24h expiry', 'Key type confusion'], ideal: 'Extended validity + clear labeling', critical: false },
+                    { title: 'WF Enterprise Created', owner: 'WF Admin (Sai)', type: 'manual', gaps: ['Manual Gethome-safe coordination'], ideal: 'Self-service creation with templates' }
+                ]
+            },
+            {
+                id: 'phase2',
+                step: 'STEP 2',
+                title: '🔗 Integration & Data',
+                subtitle: 'Connect systems and sync data',
+                color: '#8b5cf6',
+                duration: '1-2 days',
+                steps: [
+                    { title: 'API Key Integrated in WF', owner: 'WF Admin (Sai)', type: 'manual', gaps: ['No auto-validation'], ideal: 'Automated validation with health checks' },
+                    { title: 'Fleet Groups Selected', owner: 'WF Onboarding (Sai)', type: 'manual', gaps: ['Wrong group = missing vehicles'], ideal: 'Preflight check showing % coverage' },
+                    { title: 'Organizations Created', owner: 'WF Admin', type: 'manual', gaps: ['Timezone mismatches'], ideal: 'Auto-suggest from Cognito data' },
+                    { title: 'Teams Created', owner: 'WF Admin', type: 'manual', gaps: ['Manual one-by-one'], ideal: 'Bulk creation from CSV' },
+                    { title: 'Users Bulk Uploaded', owner: 'WF Admin', type: 'manual', severity: 'HIGH', gaps: ['Email verification spam', 'Dummy emails workaround', '100 user limit'], ideal: 'SSO provisioning + automated bot' },
+                    { title: 'Team Leaders Assigned', owner: 'WF Admin', type: 'manual', gaps: ['No priority field'], ideal: 'Explicit escalation priority UI' },
+                    { title: 'Vehicles Mapped to Users', owner: 'WF Admin', type: 'manual', severity: 'HIGH', gaps: ['Manual per vehicle', 'Error-prone', 'Unmapped = no alerts!'], ideal: 'Bulk mapping with progress indicator' }
+                ]
+            },
+            {
+                id: 'phase3',
+                step: 'STEP 3',
+                title: '👀 Monitoring Operations',
+                subtitle: 'Activate monitoring and workflows',
+                color: '#10b981',
+                duration: 'Ongoing',
+                critical: true,
+                steps: [
+                    { title: 'Call Center Enabled', owner: 'Gethome-safe + WF', type: 'manual', gaps: ['Team dependency'], ideal: 'Auto-enable after preflight passes' },
+                    { title: 'Monitoring Workflow Active', owner: 'Call Center Ops', type: 'manual', gaps: ['Operators skip "Done" clicks'], ideal: 'Embedded SOP checklist with forced completion' },
+                    { title: 'Activity PDFs Uploaded', owner: 'Call Center Ops', type: 'manual', gaps: ['Manual Ctrl+P and upload'], ideal: 'Auto-generate and store PDFs' },
+                    { title: '🚨 MONITORING ACTIVATION', owner: 'EROAD + WF', type: 'manual', severity: 'CRITICAL', gaps: ['ZERO visibility of customer ON/OFF toggle', 'No API/webhook', 'Billing blind spot'], ideal: 'EROAD webhook with timestamp + vehicle list', description: 'Customer can toggle monitoring ON/OFF in MyEROAD but WF has NO visibility. This creates billing misalignment and operational chaos.' },
+                    { title: '🚨 OFFBOARDING PROCESS', owner: 'WF + EROAD', type: 'manual', severity: 'CRITICAL', gaps: ['Manual email process', 'EROAD not notified', 'Continues billing'], ideal: 'Auto-notification to EROAD with exact timestamp', description: 'When WF offboards a vehicle, EROAD is not notified automatically and continues billing, causing disputes.' }
+                ]
+            },
+            {
+                id: 'phase4',
+                step: 'STEP 4',
+                title: '🛠️ Tools & Automation',
+                subtitle: 'Supporting systems and future improvements',
+                color: '#f59e0b',
+                duration: 'Continuous',
+                steps: [
+                    { title: 'Credentials Management', owner: 'WF / InfoSec', type: 'manual', severity: 'HIGH', gaps: ['Teams doc storage', 'Security risk'], ideal: 'Enterprise secrets manager (LastPass/Vault)' },
+                    { title: 'Excel Onboarding Tracker', owner: 'WF Product', type: 'manual', gaps: ['Manual tracking', 'Out of sync'], ideal: 'Live dashboard with % completion' },
+                    { title: 'Email Verification Bot', owner: 'Engineering (Tony)', type: 'auto', gaps: ['Not fully deployed'], ideal: 'Fully automated and integrated' },
+                    { title: 'Browser Portal Extension', owner: 'Engineering / InfoSec', type: 'auto', gaps: ['Awaiting InfoSec approval'], ideal: 'Approved and deployed with secrets manager' },
+                    { title: 'Preflight API Checks', owner: 'Engineering', type: 'auto', gaps: ['Not implemented'], ideal: 'Full validation suite with go/no-go dashboard' }
+                ]
+            }
         ];
-
-        const EDGES = [
-            { from: 'cognitoForm', to: 'myeroadAccount' }, { from: 'cognitoForm', to: 'orgCreation' }, { from: 'cognitoForm', to: 'userBulkUpload' },
-            { from: 'myeroadAccount', to: 'apiKeyGeneration' }, { from: 'apiKeyGeneration', to: 'apiKeyIntegration' },
-            { from: 'enterpriseCreation', to: 'apiKeyIntegration' }, { from: 'apiKeyIntegration', to: 'groupSelection' },
-            { from: 'groupSelection', to: 'vehicleUserMapping' }, { from: 'enterpriseCreation', to: 'orgCreation' },
-            { from: 'orgCreation', to: 'teamCreation' }, { from: 'teamCreation', to: 'userBulkUpload' },
-            { from: 'userBulkUpload', to: 'teamLeaderAssignment' }, { from: 'userBulkUpload', to: 'vehicleUserMapping' },
-            { from: 'vehicleUserMapping', to: 'monitoringWorkflow' }, { from: 'enterpriseCreation', to: 'callCenterEnable' },
-            { from: 'callCenterEnable', to: 'monitoringWorkflow' }, { from: 'monitoringWorkflow', to: 'activityPdfUpload' },
-            { from: 'myeroadAccount', to: 'monitoringActivation' }, { from: 'monitoringActivation', to: 'monitoringWorkflow' },
-            { from: 'monitoringWorkflow', to: 'offboardingProcess' }, { from: 'apiKeyGeneration', to: 'credentialsManagement' },
-            { from: 'credentialsManagement', to: 'browserExtension' }, { from: 'userBulkUpload', to: 'verificationBot' },
-            { from: 'apiKeyIntegration', to: 'preflightChecks' }, { from: 'enterpriseCreation', to: 'excelTracking' }
-        ];
-
-        const COLORS = { 'Account/Setup': '#3b82f6', 'Data & Integration': '#8b5cf6', 'Ops/Monitoring': '#10b981', 'Automation/Tools': '#f59e0b' };
 
         function App() {
-            const [selected, setSelected] = useState(null);
-            const [search, setSearch] = useState('');
-            const [audit, setAudit] = useState(false);
-            const [ideal, setIdeal] = useState(false);
-            const [zoom, setZoom] = useState(0.65);
-            const [pan, setPan] = useState({ x: 50, y: 50 });
-            const [dragging, setDragging] = useState(false);
-            const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-
-            const filtered = NODES.filter(n => !search || n.title.toLowerCase().includes(search.toLowerCase()) || n.owner.toLowerCase().includes(search.toLowerCase()));
+            const [selectedPhase, setSelectedPhase] = useState(null);
+            const [viewMode, setViewMode] = useState('timeline'); // timeline or list
 
             return (
-                <div className="flex flex-col h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
-                    <div className="no-print bg-white shadow-2xl p-4 z-50">
-                        <div className="flex items-center justify-between gap-4 flex-wrap">
-                            <h1 className="text-2xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                WF — EROAD Onboarding
-                            </h1>
-                            <input type="text" placeholder="🔍 Search..." value={search} onChange={(e) => setSearch(e.target.value)}
-                                className="px-4 py-2.5 border-2 rounded-xl focus:border-indigo-500 outline-none w-80" />
-                            <div className="flex gap-2 flex-wrap">
-                                <button onClick={() => setAudit(!audit)}
-                                    className={`px-5 py-2.5 rounded-xl font-bold ${audit ? 'bg-amber-500 text-white' : 'bg-gray-100'}`}>
-                                    🔍 Audit
+                <div className="min-h-screen p-8">
+                    {/* Header */}
+                    <div className="max-w-7xl mx-auto mb-8">
+                        <div className="bg-white rounded-3xl shadow-2xl p-8 mb-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h1 className="text-4xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                                        WF — EROAD Onboarding Journey
+                                    </h1>
+                                    <p className="text-gray-600 text-lg">A simple 4-phase process to get customers live</p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <button 
+                                        onClick={() => setViewMode('timeline')}
+                                        className={`px-6 py-3 rounded-xl font-bold transition-all ${viewMode === 'timeline' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg' : 'bg-gray-100 hover:bg-gray-200'}`}>
+                                        📊 Timeline View
+                                    </button>
+                                    <button 
+                                        onClick={() => setViewMode('list')}
+                                        className={`px-6 py-3 rounded-xl font-bold transition-all ${viewMode === 'list' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg' : 'bg-gray-100 hover:bg-gray-200'}`}>
+                                        📝 List View
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Critical Alerts Banner */}
+                        <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-2xl shadow-2xl p-6 mb-6">
+                            <div className="flex items-center gap-4">
+                                <div className="text-5xl">🚨</div>
+                                <div className="flex-1">
+                                    <h2 className="text-white text-2xl font-black mb-2">2 CRITICAL GAPS REQUIRE IMMEDIATE ATTENTION</h2>
+                                    <p className="text-red-100 text-lg">These issues cause billing disputes and operational blind spots</p>
+                                </div>
+                                <button 
+                                    onClick={() => setSelectedPhase(PHASES[2])}
+                                    className="bg-white text-red-600 px-6 py-3 rounded-xl font-black hover:scale-105 transition-all shadow-lg">
+                                    VIEW GAPS →
                                 </button>
-                                <button onClick={() => setIdeal(!ideal)}
-                                    className={`px-5 py-2.5 rounded-xl font-bold ${ideal ? 'bg-green-500 text-white' : 'bg-gray-100'}`}>
-                                    💡 Ideal
-                                </button>
-                                <button onClick={() => { const n = NODES.find(n => n.severity === 'CRITICAL'); setSelected(n); }}
-                                    className="px-5 py-2.5 bg-red-500 text-white rounded-xl font-bold">🚨 Gap</button>
-                                <button onClick={() => { setZoom(0.65); setPan({ x: 50, y: 50 }); }}
-                                    className="px-5 py-2.5 bg-indigo-500 text-white rounded-xl font-bold">⛶ Fit</button>
-                                <button onClick={() => setZoom(z => Math.min(2, z * 1.2))} className="px-4 py-2.5 bg-gray-700 text-white rounded-xl font-bold text-xl">+</button>
-                                <button onClick={() => setZoom(z => Math.max(0.3, z * 0.8))} className="px-4 py-2.5 bg-gray-700 text-white rounded-xl font-bold text-xl">−</button>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex-1 relative overflow-hidden cursor-grab"
-                        onMouseDown={(e) => { setDragging(true); setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y }); }}
-                        onMouseMove={(e) => { if (dragging) setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }); }}
-                        onMouseUp={() => setDragging(false)}
-                        onMouseLeave={() => setDragging(false)}
-                        onWheel={(e) => { e.preventDefault(); setZoom(z => Math.min(Math.max(0.3, z + e.deltaY * -0.001), 2)); }}>
-                        <svg className="w-full h-full" style={{ background: 'white' }}>
-                            <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
-                                <rect x="0" y="0" width="1600" height="550" fill="#eff6ff" opacity="0.3" rx="20" />
-                                <text x="30" y="60" fontSize="32" fontWeight="900" fill="#3b82f6">Account / Setup</text>
-                                
-                                <rect x="0" y="570" width="1600" height="300" fill="#f5f3ff" opacity="0.3" rx="20" />
-                                <text x="30" y="630" fontSize="32" fontWeight="900" fill="#8b5cf6">Data & Integration</text>
-                                
-                                <rect x="0" y="890" width="1600" height="300" fill="#f0fdf4" opacity="0.3" rx="20" />
-                                <text x="30" y="950" fontSize="32" fontWeight="900" fill="#10b981">Ops / Monitoring</text>
-                                
-                                <rect x="0" y="1210" width="1600" height="250" fill="#fffbeb" opacity="0.3" rx="20" />
-                                <text x="30" y="1270" fontSize="32" fontWeight="900" fill="#f59e0b">Automation / Tools</text>
-
-                                {EDGES.map((e, i) => {
-                                    const from = NODES.find(n => n.id === e.from);
-                                    const to = NODES.find(n => n.id === e.to);
-                                    if (!from || !to) return null;
-                                    return <line key={i} className="edge-line" x1={from.x + 110} y1={from.y + 50} x2={to.x + 110} y2={to.y + 50} />;
-                                })}
-
-                                {filtered.map(node => {
-                                    let cls = 'node-card';
-                                    if (selected?.id === node.id) cls += ' selected';
-                                    if (audit && node.severity === 'CRITICAL') cls += ' audit-critical';
-                                    else if (audit && node.severity === 'HIGH') cls += ' audit-high';
-                                    
-                                    return (
-                                        <foreignObject key={node.id} x={node.x} y={node.y} width="220" height="120" onClick={() => setSelected(node)}>
-                                            <div className={cls} style={{ borderColor: COLORS[node.category] }}>
-                                                <div className="flex items-start justify-between mb-2">
-                                                    <div className="font-bold text-gray-900 flex-1 pr-2" style={{ fontSize: '15px' }}>{node.title}</div>
-                                                    <span className={`px-2 py-1 rounded-lg text-xs font-bold ${node.manual ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
-                                                        {node.manual ? 'MANUAL' : 'AUTO'}
-                                                    </span>
-                                                </div>
-                                                <div className="text-xs text-gray-600 font-medium mb-2">{node.owner}</div>
-                                                {node.severity === 'CRITICAL' && <div className="mt-2 px-2 py-1 bg-red-600 text-white text-xs font-black rounded-md">🚨 CRITICAL</div>}
-                                                {node.severity === 'HIGH' && <div className="mt-2 px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded-md">⚠️ HIGH</div>}
+                    {/* Timeline View */}
+                    {viewMode === 'timeline' && (
+                        <div className="max-w-7xl mx-auto relative">
+                            <div className="timeline-line"></div>
+                            <div className="grid grid-cols-4 gap-8 relative z-10">
+                                {PHASES.map((phase, idx) => (
+                                    <div key={phase.id} className="relative">
+                                        <div 
+                                            className={`phase-card ${phase.critical ? 'critical' : ''}`}
+                                            onClick={() => setSelectedPhase(phase)}
+                                            style={{ borderTopColor: phase.color, borderTopWidth: '6px' }}
+                                        >
+                                            <div className="step-badge">{phase.step}</div>
+                                            <div className="text-4xl mb-4">{phase.title.split(' ')[0]}</div>
+                                            <h3 className="text-xl font-black mb-2 text-gray-900">{phase.title.substring(2)}</h3>
+                                            <p className="text-gray-600 mb-4">{phase.subtitle}</p>
+                                            <div className="flex items-center justify-between mt-auto">
+                                                <span className="text-sm font-bold" style={{ color: phase.color }}>⏱ {phase.duration}</span>
+                                                <span className="text-sm font-bold text-gray-400">{phase.steps.length} steps</span>
                                             </div>
-                                        </foreignObject>
-                                    );
-                                })}
-                            </g>
-                        </svg>
+                                            {phase.critical && (
+                                                <div className="mt-4">
+                                                    <div className="critical-flag">
+                                                        ⚠️ CRITICAL ISSUES
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {idx < PHASES.length - 1 && <div className="arrow-connector"></div>}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
-                        <div className="no-print absolute bottom-6 left-6 bg-white rounded-2xl shadow-2xl p-5">
-                            <h3 className="font-black text-lg mb-3">📊 Categories</h3>
-                            {Object.entries(COLORS).map(([cat, color]) => (
-                                <div key={cat} className="flex items-center gap-3 mb-2">
-                                    <div className="w-6 h-6 rounded-lg" style={{ background: color }}></div>
-                                    <span className="font-semibold text-sm">{cat}</span>
+                    {/* List View */}
+                    {viewMode === 'list' && (
+                        <div className="max-w-5xl mx-auto space-y-6">
+                            {PHASES.map(phase => (
+                                <div key={phase.id} className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                                    <div className="p-6" style={{ background: `linear-gradient(135deg, ${phase.color}20, ${phase.color}10)`, borderLeft: `6px solid ${phase.color}` }}>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="text-4xl">{phase.title.split(' ')[0]}</div>
+                                                <div>
+                                                    <h3 className="text-2xl font-black text-gray-900">{phase.title.substring(2)}</h3>
+                                                    <p className="text-gray-600">{phase.subtitle}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-sm font-bold text-gray-500">Duration</div>
+                                                <div className="text-xl font-black" style={{ color: phase.color }}>{phase.duration}</div>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3">
+                                            {phase.steps.map((step, idx) => (
+                                                <div key={idx} className={`substep ${step.severity === 'CRITICAL' ? 'border-l-red-500 bg-red-50' : step.severity === 'HIGH' ? 'border-l-orange-500 bg-orange-50' : ''}`}>
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-3 mb-2">
+                                                                <span className="font-black text-gray-900">{step.title}</span>
+                                                                {step.severity === 'CRITICAL' && <span className="critical-flag text-xs">🚨 CRITICAL</span>}
+                                                                {step.severity === 'HIGH' && <span className="px-2 py-1 bg-orange-500 text-white rounded text-xs font-bold">⚠️ HIGH</span>}
+                                                                <span className={`px-2 py-1 rounded text-xs font-bold ${step.type === 'manual' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+                                                                    {step.type === 'manual' ? '👤 MANUAL' : '🤖 AUTO'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-sm text-gray-600 mb-1">
+                                                                <strong>Owner:</strong> {step.owner}
+                                                            </div>
+                                                            {step.description && (
+                                                                <div className="text-sm text-gray-700 bg-white p-3 rounded-lg mt-2">
+                                                                    {step.description}
+                                                                </div>
+                                                            )}
+                                                            {step.gaps && step.gaps.length > 0 && (
+                                                                <div className="mt-2">
+                                                                    <div className="text-xs font-bold text-red-700 mb-1">⚠️ Current Gaps:</div>
+                                                                    <div className="text-xs text-red-600">{step.gaps.join(' • ')}</div>
+                                                                </div>
+                                                            )}
+                                                            {step.ideal && (
+                                                                <div className="mt-2">
+                                                                    <div className="text-xs font-bold text-green-700 mb-1">💡 Ideal State:</div>
+                                                                    <div className="text-xs text-green-600">{step.ideal}</div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    )}
 
-                    {selected && (
-                        <div className="no-print fixed right-0 top-0 bottom-0 w-[500px] bg-white shadow-2xl overflow-y-auto z-50">
-                            <div className="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
-                                <button onClick={() => setSelected(null)} className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold">×</button>
-                                <h2 className="text-2xl font-black mb-3 pr-12">{selected.title}</h2>
-                                <div className="flex gap-2"><span className="px-3 py-1.5 rounded-lg text-sm font-bold bg-white/20">{selected.severity}</span></div>
-                            </div>
-                            <div className="p-6 space-y-6">
-                                <div><h3 className="text-xs font-black uppercase text-gray-500 mb-2">👤 Owner</h3><p className="text-base font-semibold">{selected.owner}</p></div>
-                                <div><h3 className="text-xs font-black uppercase text-gray-500 mb-2">ℹ️ Context</h3><p className="text-base">{selected.context}</p></div>
-                                <div><h3 className="text-xs font-black uppercase text-gray-500 mb-2">📥 Inputs</h3><ul>{selected.inputs.map((i, idx) => <li key={idx} className="text-base">→ {i}</li>)}</ul></div>
-                                <div><h3 className="text-xs font-black uppercase text-gray-500 mb-2">📤 Downstream</h3><ul>{selected.downstream.map((d, idx) => <li key={idx} className="text-base">⇒ {d}</li>)}</ul></div>
-                                {selected.gaps.length > 0 && <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg"><h3 className="text-sm font-black text-red-900 mb-2">⚠️ GAPS</h3><ul>{selected.gaps.map((g, idx) => <li key={idx} className="text-sm text-red-800">• {g}</li>)}</ul></div>}
-                                {selected.workarounds.length > 0 && <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg"><h3 className="text-sm font-black text-yellow-900 mb-2">🔧 WORKAROUNDS</h3><ul>{selected.workarounds.map((w, idx) => <li key={idx} className="text-sm text-yellow-800">• {w}</li>)}</ul></div>}
-                                {ideal && selected.ideal.length > 0 && <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg"><h3 className="text-sm font-black text-green-900 mb-2">💡 IDEAL</h3><ul>{selected.ideal.map((i, idx) => <li key={idx} className="text-sm text-green-800">• {i}</li>)}</ul></div>}
+                    {/* Modal for Phase Details */}
+                    {selectedPhase && (
+                        <div className="modal-overlay" onClick={() => setSelectedPhase(null)}>
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                <div className="sticky top-0 p-8" style={{ background: `linear-gradient(135deg, ${selectedPhase.color}, ${selectedPhase.color}dd)` }}>
+                                    <button 
+                                        onClick={() => setSelectedPhase(null)}
+                                        className="absolute top-6 right-6 w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white text-2xl font-bold transition-all">
+                                        ×
+                                    </button>
+                                    <div className="text-6xl mb-4">{selectedPhase.title.split(' ')[0]}</div>
+                                    <h2 className="text-4xl font-black text-white mb-2">{selectedPhase.title.substring(2)}</h2>
+                                    <p className="text-white text-xl opacity-90">{selectedPhase.subtitle}</p>
+                                    <div className="flex gap-4 mt-6">
+                                        <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
+                                            <div className="text-white/80 text-sm font-bold">Duration</div>
+                                            <div className="text-white text-lg font-black">{selectedPhase.duration}</div>
+                                        </div>
+                                        <div className="bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
+                                            <div className="text-white/80 text-sm font-bold">Total Steps</div>
+                                            <div className="text-white text-lg font-black">{selectedPhase.steps.length}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-8 space-y-4">
+                                    {selectedPhase.steps.map((step, idx) => (
+                                        <div key={idx} className={`substep ${step.severity === 'CRITICAL' ? 'border-l-red-500 bg-red-50' : step.severity === 'HIGH' ? 'border-l-orange-500 bg-orange-50' : ''}`}>
+                                            <div className="flex items-start gap-4">
+                                                <div className="w-10 h-10 rounded-full flex items-center justify-center font-black text-white" style={{ background: selectedPhase.color }}>
+                                                    {idx + 1}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <h3 className="font-black text-lg text-gray-900">{step.title}</h3>
+                                                        {step.severity === 'CRITICAL' && <span className="critical-flag">🚨 CRITICAL</span>}
+                                                        {step.severity === 'HIGH' && <span className="px-2 py-1 bg-orange-500 text-white rounded text-xs font-bold">⚠️ HIGH</span>}
+                                                    </div>
+                                                    <div className="text-sm text-gray-600 mb-3">
+                                                        <strong>Owner:</strong> {step.owner} • 
+                                                        <span className={`ml-2 px-2 py-0.5 rounded text-xs font-bold ${step.type === 'manual' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+                                                            {step.type === 'manual' ? '👤 MANUAL' : '🤖 AUTO'}
+                                                        </span>
+                                                    </div>
+                                                    {step.description && (
+                                                        <div className="bg-white p-4 rounded-lg mb-3 border-2 border-red-200">
+                                                            <div className="font-bold text-red-900 mb-2">📋 Description</div>
+                                                            <div className="text-sm text-gray-700">{step.description}</div>
+                                                        </div>
+                                                    )}
+                                                    {step.gaps && step.gaps.length > 0 && (
+                                                        <div className="bg-red-50 p-4 rounded-lg mb-3 border-l-4 border-red-500">
+                                                            <div className="font-bold text-red-900 mb-2">⚠️ Current Gaps</div>
+                                                            <ul className="space-y-1">
+                                                                {step.gaps.map((gap, i) => (
+                                                                    <li key={i} className="text-sm text-red-700">• {gap}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                    {step.ideal && (
+                                                        <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                                                            <div className="font-bold text-green-900 mb-2">💡 Ideal State</div>
+                                                            <div className="text-sm text-green-700">{step.ideal}</div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     )}
